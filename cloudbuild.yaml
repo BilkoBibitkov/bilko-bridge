@@ -1,37 +1,31 @@
 steps:
-# Step 1: Git & Branch Prep
+# Step 1: Git Prep
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
+  script: |
+    #!/usr/bin/env bash
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
-    # The double \$\$ tells Cloud Build: "This is NOT a substitution, ignore it"
-    git remote set-url origin https://\$\$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
+    # We reference the secret as a standard shell variable
+    git remote set-url origin https://\${GH_TOKEN}@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
     cp PRD.json prd.json || echo "Ready"
 
 # Step 2: Evolution (Ralph)
 - name: 'python:3.11'
   secretEnv: ['GEMINI_API_KEY']
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
+  script: |
+    #!/usr/bin/env bash
     pip install google-genai
-    echo "GEMINI_API_KEY=\$\$GEMINI_API_KEY" > .env
+    echo "GEMINI_API_KEY=\${GEMINI_API_KEY}" > .env
     chmod +x ralph.sh
     ./ralph.sh 5
 
 # Step 3: Build & Push
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
+  script: |
+    #!/usr/bin/env bash
     git add .
     git commit -m "chore: Ralph evolution update [skip ci]" || echo "No changes"
     git push origin main
@@ -45,4 +39,3 @@ availableSecrets:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  substitutionOption: ALLOW_LOOSE
