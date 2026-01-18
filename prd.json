@@ -1,0 +1,15 @@
+{
+  "project_name": "Bilkobibitkov.dev",
+  "tech_stack": ["Next.js 16", "Tailwind CSS"],
+  "design_system": {
+    "colors": {
+      "primary": "blue-600",
+      "background": "slate-950",
+      "text": "slate-100"
+    }
+  },
+  "current_goal": "Deploy a resilient Hello World foundation.",
+  "routes": [
+    { "path": "/", "name": "Home", "status": "Pending" }
+  ]
+}
