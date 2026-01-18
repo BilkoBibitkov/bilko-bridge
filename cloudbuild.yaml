@@ -1,3 +1,4 @@
+
 steps:
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
@@ -7,7 +8,7 @@ steps:
   - |
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
-    git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
+    git remote set-url origin https://\$\$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
@@ -18,7 +19,7 @@ steps:
   - '-c'
   - |
     pip install google-genai
-    export GEMINI_API_KEY=$$GEMINI_API_KEY
+    export GEMINI_API_KEY=\$\$GEMINI_API_KEY
     chmod +x ralph.sh
     ./ralph.sh 5
 
@@ -51,3 +52,4 @@ availableSecrets:
     env: 'GEMINI_API_KEY'
 options:
   logging: CLOUD_LOGGING_ONLY
+EOF
