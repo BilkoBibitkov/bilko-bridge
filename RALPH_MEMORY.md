@@ -7,3 +7,4 @@ MEMORY LOG:
 - Use the 'gcr.io/bilkobibitkov/firebase' builder for hosting deployments.
 - Base Docker images (like 'ubuntu', 'node', 'python') are minimal and often lack system tools. Always explicitly run 'apt-get install -y curl' (or git, etc.) before trying to use them in a script.
 - Bash syntax error "unexpected end of file" implies a missing closing keyword. Always pair 'if' with 'fi', 'do' with 'done', and check for closing quotes.
+- Verify gcloud authentication before retrieving secrets. If a secret variable is empty, abort the operation to avoid interactive prompts.
