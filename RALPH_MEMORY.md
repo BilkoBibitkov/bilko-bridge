@@ -2,20 +2,22 @@
 
 ## I. CRITICAL EXECUTION RULES
 - **Fail Fast:** Always start bash scripts with `set -e`.
-- **Syntax Integrity:** Check for closing keywords. Pair `if` with `fi`, `do` with `done`.
-- **Variable Safety:** In Cloud Build YAML, use `$$VAR` (double dollar) for environment variables, never backslashes.
+- **Directory Hygiene:** The execution loop persists state. **Always reset directory** (e.g., `cd /workspace`) at the start of a script or loop.
+- **Syntax Integrity:** Check for closing keywords (`fi`, `done`).
 
-## II. ENVIRONMENT CONSTRAINTS (The "Wrong Toolbox" Fix)
-- **Current Container:** You run in `python:3.11`. **DO NOT use `npx`, `npm`, or `node` commands.**
-- **Project Scaffolding:** Do not use `create-next-app`. Instead, manually generate `package.json`, `tsconfig.json`, and `next.config.mjs` using `cat << EOF`.
-- **Delegation:** The pipeline has a subsequent `node:20` step. Trust it to run `npm install` and `npm run build` based on the files you generate.
-- **System Tools:** Base images are minimal. If you need `curl` or `git` in a script, `apt-get install` them first.
+## II. ENVIRONMENT CONSTRAINTS (The "Wrong Toolbox" Lesson)
+- **Current Container:** You run in `ralph-brain` (Python 3.11). **DO NOT** use `npx`, `npm`, or `node` here.
+- **Delegation:** Your job is to generate files (`package.json`, `tsconfig.json`, `next.config.mjs`) using `cat`.
+- **The Muscle:** The pipeline has a subsequent `node:20` step. Trust it to run `npm install` and `npm run build` based on the files you generate.
+- **Project Scaffolding:** Do not use `create-next-app`. Manually generate the config files.
+- **Idempotency:** The workspace persists across iterations. Your generated script must explicitly clean up before creating. Always run `rm -rf app src` before scaffolding to prevent conflicts between `app/` and `src/app/`.
 
 ## III. API & AUTHENTICATION
-- **Validation:** Check `gcloud` auth before accessing secrets. Abort if variables are empty.
-- **Hygiene:** Always `.strip()` whitespace from API Keys.
-- **Model Discovery:** Never guess model names. Read `active_model.txt` (from the Probe step).
-- **Error Handling:** A 404 on `generateContent` means "Wrong Model ID", not "Invalid Key".
+- **Model Discovery:** Always read `active_model.txt` to find the correct Model ID.
+- **Validation:** Abort if secrets are empty.
 
 ## IV. DEPLOYMENT
-- **Builder:** Use the custom `gcr.io/bilkobibitkov/firebase` builder.
+- **Builder:** Use `gcr.io/bilkobibitkov/firebase`.
+
+## V. DEBUGGING PROTOCOLS
+- **Instant Failure:** If a build fails with "Build does not specify logsBucket", it is a YAML Syntax or Secret Definition error. Use 'gcloud builds describe' to identify the validation failure.
