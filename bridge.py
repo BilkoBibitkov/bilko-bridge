@@ -15,29 +15,24 @@ def run_bridge():
         return
 
     client = genai.Client(api_key=api_key)
-    context = sys.stdin.read().strip()
-    
-    # PATH NORMALIZATION
-    existing_files = set()
-    base_dir = os.getcwd()
-    for root, dirs, files in os.walk(os.path.join(base_dir, 'src')):
-        for f in files:
-            full_path = os.path.join(root, f)
-            rel_path = os.path.relpath(full_path, base_dir)
-            existing_files.add(rel_path)
+    full_input = sys.stdin.read().strip()
 
-    # TARGETS
-    targets = ["src/app/page.tsx"]
-    remaining_tasks = [t for t in targets if t not in existing_files]
+    # --- PARSE INPUT ---
+    try:
+        # The input format is "USER_PROMPT: <prompt>\n\nPRD:..."
+        prompt_part, context_part = full_input.split('\n\n', 1)
+        if 'USER_PROMPT:' not in prompt_part:
+             raise ValueError("USER_PROMPT not in first part of input")
+        user_prompt = prompt_part.replace('USER_PROMPT:', '').strip()
+    except ValueError:
+        user_prompt = ""
+        context_part = full_input 
 
-    if not remaining_tasks:
-        print("<promise>COMPLETE</promise>")
-        print("echo 'BILKO VERIFIED: Foundation complete.'")
+    if not user_prompt:
+        print("echo 'BILKO NOTE: No prompt provided. Foundation is complete.'")
         return
 
-    next_task = remaining_tasks[0]
-    
-    # MODEL DISCOVERY
+    # --- MODEL DISCOVERY ---
     try:
         all_models = list(client.models.list())
         valid_models = [m.name for m in all_models if 'generateContent' in m.supported_actions]
@@ -45,25 +40,39 @@ def run_bridge():
     except:
         valid_models = ['models/gemini-1.5-flash']
 
-    # INSTRUCTION
+    # --- SYSTEM INSTRUCTION ---
     system_instr = (
-        f"ROLE: Senior Next.js Developer. MISSION: Create {next_task}. "
-        "CONTEXT: Minimalist Hello World. Theme: Slate-950/Blue-600. "
-        "OUTPUT: Bash command with 'cat << EOF'. No markdown."
+        f"ROLE: Senior AI Developer Pair-Programmer.\n"
+        f"MISSION: Implement the user's request by generating a bash script.\n"
+        f"USER REQUEST: '{user_prompt}'\n\n"
+        f"INSTRUCTIONS:\n"
+        f"1. You are given a PRD (prd.json) and code context.\n"
+        f"2. Your output MUST be a single, executable bash script.\n"
+        f"3. To modify a file, you MUST overwrite the entire file using `cat << EOF > path/to/file.tsx`. Do NOT use `sed` or `patch`.\n"
+        f"4. If the request implies a goal change, also update `prd.json` in your script.\n"
+        f"5. Your script must be robust. Use `set -e`.\n"
+        f"6. Do NOT include explanations, markdown, or any text other than the bash script itself."
     )
 
-    # EXECUTION
+    # --- EXECUTION ---
     for model_id in valid_models:
         try:
-            response = client.models.generate_content(model=model_id, contents=f"{system_instr}\n\n{context}")
+            response = client.models.generate_content(model=model_id, contents=f"{system_instr}\n\n{context_part}")
+            
             clean_cmd = response.text.strip()
-            if "```" in clean_cmd: clean_cmd = clean_cmd.split("```")[1].replace("bash", "").strip()
+            if clean_cmd.startswith("```bash"): clean_cmd = clean_cmd[7:]
+            if clean_cmd.startswith("```"): clean_cmd = clean_cmd[3:]
+            if clean_cmd.endswith("```"): clean_cmd = clean_cmd[:-3]
+            clean_cmd = clean_cmd.strip()
             
             if clean_cmd:
-                print(f"set -e; {clean_cmd} && echo 'SUCCESS: {next_task} built.'")
+                success_message = f"SUCCESS: User prompt '{user_prompt[:30]}...' implemented."
+                print(f"set -e; {clean_cmd}\n echo '{success_message}'")
                 return
-        except: continue
-    print("echo 'FAILURE: All models failed.'")
+        except Exception:
+            continue 
+            
+    print("echo 'FAILURE: All models failed to generate a valid command.'")
 
 if __name__ == "__main__":
     run_bridge()
