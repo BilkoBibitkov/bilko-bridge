@@ -1,78 +1,58 @@
-import sys, os, time
+import sys, os
 from google import genai
 
 def run_bridge():
-    # AUTH
-    api_key = None
-    if os.path.exists(".env"):
-        with open(".env") as f:
-            for line in f:
-                if "GOOGLE_API_KEY=" in line:
-                    api_key = line.split("=")[1].strip().strip('"').strip("'")
-    
-    if not api_key:
-        print("echo 'FAILURE: No API Key found.'")
+    # The SDK automatically detects GOOGLE_API_KEY or GEMINI_API_KEY
+    try:
+        client = genai.Client()
+    except Exception as e:
+        print(f"echo 'FAILURE: GenAI Client initialization failed: {e}'")
         return
 
-    client = genai.Client(api_key=api_key)
     full_input = sys.stdin.read().strip()
 
     # --- PARSE INPUT ---
+    # Expecting: PRD: <json>\n\nCONTEXT: <files>
     try:
-        # The input format is "USER_PROMPT: <prompt>\n\nPRD:..."
-        prompt_part, context_part = full_input.split('\n\n', 1)
-        if 'USER_PROMPT:' not in prompt_part:
-             raise ValueError("USER_PROMPT not in first part of input")
-        user_prompt = prompt_part.replace('USER_PROMPT:', '').strip()
+        if '\n\n' in full_input:
+            prd_part, context_part = full_input.split('\n\n', 1)
+        else:
+            prd_part, context_part = full_input, ""
     except ValueError:
-        user_prompt = ""
-        context_part = full_input 
-
-    if not user_prompt:
-        print("echo 'BILKO NOTE: No prompt provided. Foundation is complete.'")
+        print("echo 'FAILURE: Could not split PRD and Context.'")
         return
-
-    # --- MODEL DISCOVERY ---
-    try:
-        all_models = list(client.models.list())
-        valid_models = [m.name for m in all_models if 'generateContent' in m.supported_actions]
-        valid_models.sort(key=lambda x: ("flash" not in x.lower(), x))
-    except:
-        valid_models = ['models/gemini-1.5-flash']
 
     # --- SYSTEM INSTRUCTION ---
     system_instr = (
-        f"ROLE: Senior AI Developer Pair-Programmer.\n"
-        f"MISSION: Implement the user's request by generating a bash script.\n"
-        f"USER REQUEST: '{user_prompt}'\n\n"
-        f"INSTRUCTIONS:\n"
-        f"1. You are given a PRD (prd.json) and code context.\n"
-        f"2. Your output MUST be a single, executable bash script.\n"
-        f"3. To modify a file, you MUST overwrite the entire file using `cat << EOF > path/to/file.tsx`. Do NOT use `sed` or `patch`.\n"
-        f"4. If the request implies a goal change, also update `prd.json` in your script.\n"
-        f"5. Your script must be robust. Use `set -e`.\n"
-        f"6. Do NOT include explanations, markdown, or any text other than the bash script itself."
+        "ROLE: Senior AI Developer Pair-Programmer.\n"
+        "MISSION: Implement the user's request found in prd.json by generating a bash script.\n"
+        "INSTRUCTIONS:\n"
+        "1. Your output MUST be a single, executable bash script.\n"
+        "2. To modify a file, you MUST overwrite the entire file using 'cat << EOF > path/to/file.tsx'.\n"
+        "3. Your script must be robust. Use 'set -e'.\n"
+        "4. Do NOT include explanations, markdown, or any text other than the bash script itself."
     )
 
     # --- EXECUTION ---
-    for model_id in valid_models:
-        try:
-            response = client.models.generate_content(model=model_id, contents=f"{system_instr}\n\n{context_part}")
-            
-            clean_cmd = response.text.strip()
-            if clean_cmd.startswith("```bash"): clean_cmd = clean_cmd[7:]
-            if clean_cmd.startswith("```"): clean_cmd = clean_cmd[3:]
-            if clean_cmd.endswith("```"): clean_cmd = clean_cmd[:-3]
-            clean_cmd = clean_cmd.strip()
-            
-            if clean_cmd:
-                success_message = f"SUCCESS: User prompt '{user_prompt[:30]}...' implemented."
-                print(f"set -e; {clean_cmd}\n echo '{success_message}'")
-                return
-        except Exception:
-            continue 
-            
-    print("echo 'FAILURE: All models failed to generate a valid command.'")
+    try:
+        # Using Gemini 2.0 Flash for speed and high context window
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=f"PRD AND CONTEXT:\n{full_input}",
+            config={'system_instruction': system_instr}
+        )
+        
+        clean_cmd = response.text.strip()
+        if clean_cmd.startswith("\`\`\`bash"): clean_cmd = clean_cmd[7:]
+        if clean_cmd.startswith("\`\`\`"): clean_cmd = clean_cmd[3:]
+        if clean_cmd.endswith("\`\`\`"): clean_cmd = clean_cmd[:-3]
+        
+        if clean_cmd.strip():
+            print(f"set -e; {clean_cmd.strip()}\n echo 'SUCCESS: Ralph evolution iteration complete.'")
+        else:
+            print("echo 'FAILURE: Model returned empty command.'")
+    except Exception as e:
+        print(f"echo 'FAILURE: AI generation error: {e}'")
 
 if __name__ == "__main__":
     run_bridge()

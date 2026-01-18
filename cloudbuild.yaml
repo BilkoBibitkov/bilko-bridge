@@ -13,8 +13,8 @@ steps:
 # Step 2: Evolution (Ralph)
 - name: 'python:3.11'
   secretEnv: ['GEMINI_API_KEY']
-  # This 'env' block is the key to fixing the Python visibility issue
   env:
+    - 'GOOGLE_API_KEY=\${GEMINI_API_KEY}'
     - 'GEMINI_API_KEY=\${GEMINI_API_KEY}'
   script: |
     #!/usr/bin/env bash
@@ -33,7 +33,7 @@ steps:
 - name: 'gcr.io/cloud-builders/firebase'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
-# Step 5: Sync Evolution back to GitHub
+# Step 5: Sync
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   script: |
