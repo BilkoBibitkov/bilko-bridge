@@ -2,23 +2,23 @@ import sys, os
 from google import genai
 
 def run_bridge():
-    # 1. Sanitize the Key (Strip invisible newlines/spaces)
-    # We check both possible variable names to be safe
-    raw_key = os.environ.get("GOOGLE_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+    # 1. Force Clean the Key
+    # We grab the raw var, strip whitespace, and pass it explicitly.
+    raw_key = os.environ.get("GOOGLE_API_KEY", "")
     clean_key = raw_key.strip()
     
     if not clean_key:
-         print("echo 'FAILURE: API Key is empty after cleanup.'")
+         print("echo 'FAILURE: API Key is empty.'")
          return
 
     try:
-        # Pass the clean key explicitly to the client
+        # Pass api_key explicitly to avoid library auto-discovery issues
         client = genai.Client(api_key=clean_key)
     except Exception as e:
         print(f"echo 'FAILURE: Client init failed: {e}'")
         return
 
-    # Read stdin (PRD + Context)
+    # Read stdin
     full_input = sys.stdin.read().strip()
 
     # --- SYSTEM INSTRUCTION ---
@@ -34,15 +34,14 @@ def run_bridge():
 
     # --- EXECUTION ---
     try:
-        # Using Gemini 2.0 Flash for speed and high context window
+        # Using gemini-1.5-flash for stability
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-1.5-flash',
             contents=f"PRD AND CONTEXT:\n{full_input}",
             config={'system_instruction': system_instr}
         )
         
         clean_cmd = response.text.strip()
-        # Clean up markdown formatting if present
         if clean_cmd.startswith("```bash"): clean_cmd = clean_cmd[7:]
         if clean_cmd.startswith("```"): clean_cmd = clean_cmd[3:]
         if clean_cmd.endswith("```"): clean_cmd = clean_cmd[:-3]
@@ -52,7 +51,7 @@ def run_bridge():
         else:
             print("echo 'FAILURE: Model returned empty command.'")
     except Exception as e:
-        # Use simple quotes for error message to avoid shell escaping issues
+        # Remove quotes to prevent shell errors
         safe_error = str(e).replace("'", "").replace('"', "")
         print(f"echo 'FAILURE: AI generation error: {safe_error}'")
 

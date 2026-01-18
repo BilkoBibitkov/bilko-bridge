@@ -10,21 +10,18 @@ steps:
     #!/usr/bin/env bash
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
-    # use $$GH_TOKEN so Cloud Build passes it to the shell
+    # $$GH_TOKEN ensures Cloud Build passes the variable to Bash
     git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
 # Step 2: Evolution (Ralph)
 - name: 'python:3.11'
-  secretEnv: ['GEMINI_API_KEY']
+  secretEnv: ['GOOGLE_API_KEY']
   script: |
     #!/usr/bin/env bash
-    pip install google-genai
-    
-    # Alias the secret key to the name the SDK expects
-    export GOOGLE_API_KEY=$$GEMINI_API_KEY
-    
+    # -q keeps the logs clean
+    pip install -q google-genai
     chmod +x ralph.sh
     ./ralph.sh 5
 
@@ -35,10 +32,10 @@ steps:
     npm install
     npm run build
 
-# Step 4: Firebase Deploy
+# Step 4: Firebase Deploy (Custom Builder)
 - name: 'gcr.io/bilkobibitkov/firebase'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
-  
+
 # Step 5: Sync back to GitHub
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
@@ -52,5 +49,6 @@ availableSecrets:
   secretManager:
   - versionName: projects/bilkobibitkov/secrets/GITHUB_PAT/versions/latest
     env: 'GH_TOKEN'
+  # Map the secret directly to the environment variable Python expects
   - versionName: projects/bilkobibitkov/secrets/GEMINI_API_KEY/versions/latest
-    env: 'GEMINI_API_KEY'
+    env: 'GOOGLE_API_KEY'
