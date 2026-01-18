@@ -2,40 +2,42 @@ import sys, os
 from google import genai
 
 def run_bridge():
-    # 1. Force Clean the Key
-    raw_key = os.environ.get("GOOGLE_API_KEY", "")
-    clean_key = raw_key.strip()
+    # 1. Setup Client
+    raw_key = os.environ.get("GOOGLE_API_KEY", "").strip()
+    if not raw_key:
+         print("echo 'FAILURE: API Key is empty.'"); return
     
-    if not clean_key:
-         print("echo 'FAILURE: API Key is empty.'")
-         return
-
     try:
-        # Pass api_key explicitly to avoid library auto-discovery issues
-        client = genai.Client(api_key=clean_key)
+        client = genai.Client(api_key=raw_key)
     except Exception as e:
-        print(f"echo 'FAILURE: Client init failed: {e}'")
-        return
+        print(f"echo 'FAILURE: Client init failed: {e}'"); return
 
-    # Read stdin
+    # 2. Read "The Secret" (Memory)
+    memory_content = ""
+    if os.path.exists("RALPH_MEMORY.md"):
+        with open("RALPH_MEMORY.md", "r") as f:
+            memory_content = f.read().strip()
+
+    # 3. Read Input
     full_input = sys.stdin.read().strip()
 
-    # --- SYSTEM INSTRUCTION ---
+    # 4. Construct System Instruction with Memory
     system_instr = (
         "ROLE: Senior AI Developer Pair-Programmer.\n"
+        f"PERSISTENT MEMORY/RULES:\n{memory_content}\n"  # <--- Memory Injected Here
         "MISSION: Implement the user's request found in prd.json by generating a bash script.\n"
         "INSTRUCTIONS:\n"
-        "1. Your output MUST be a single, executable bash script.\n"
-        "2. To modify a file, you MUST overwrite the entire file using 'cat << EOF > path/to/file.tsx'.\n"
-        "3. Your script must be robust. Use 'set -e'.\n"
-        "4. Do NOT include explanations, markdown, or any text other than the bash script itself."
+        "1. Output MUST be a single, executable bash script.\n"
+        "2. Use 'cat << EOF' to overwrite files.\n"
+        "3. Script must use 'set -e'.\n"
+        "4. NO markdown, NO explanations. Just code."
     )
 
-    # --- EXECUTION ---
+    # 5. Execute
     try:
-        # Using gemini-1.5-flash for stability
+        # We use the specific -001 version to avoid 404 errors
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-1.5-flash-001', 
             contents=f"PRD AND CONTEXT:\n{full_input}",
             config={'system_instruction': system_instr}
         )
