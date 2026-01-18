@@ -8,8 +8,8 @@ steps:
   - |
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
-    # The double $$ tells Cloud Build: "This is NOT a substitution, ignore it"
-    git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
+    # The double \$\$ tells Cloud Build: "This is NOT a substitution, ignore it"
+    git remote set-url origin https://\$\$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
     cp PRD.json prd.json || echo "Ready"
 
@@ -21,7 +21,7 @@ steps:
   - '-c'
   - |
     pip install google-genai
-    echo "GEMINI_API_KEY=$$GEMINI_API_KEY" > .env
+    echo "GEMINI_API_KEY=\$\$GEMINI_API_KEY" > .env
     chmod +x ralph.sh
     ./ralph.sh 5
 
