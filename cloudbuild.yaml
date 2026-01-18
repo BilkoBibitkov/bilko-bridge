@@ -8,10 +8,10 @@ steps:
   - |
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
-    # Note the double $$ - this is the key to fixing your error
-    git remote set-url origin https://\$\$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
+    # The double $$ tells Cloud Build: "This is NOT a substitution, ignore it"
+    git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
-    cp PRD.json prd.json || echo "Standardized PRD"
+    cp PRD.json prd.json || echo "Ready"
 
 # Step 2: Evolution (Ralph)
 - name: 'python:3.11'
@@ -21,11 +21,11 @@ steps:
   - '-c'
   - |
     pip install google-genai
-    echo "GEMINI_API_KEY=\$\$GEMINI_API_KEY" > .env
+    echo "GEMINI_API_KEY=$$GEMINI_API_KEY" > .env
     chmod +x ralph.sh
     ./ralph.sh 5
 
-# Step 3: Push back to GitHub
+# Step 3: Build & Push
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   entrypoint: 'bash'
@@ -45,5 +45,4 @@ availableSecrets:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  # This tells Cloud Build NOT to get confused by variables it doesn't recognize
   substitutionOption: ALLOW_LOOSE
