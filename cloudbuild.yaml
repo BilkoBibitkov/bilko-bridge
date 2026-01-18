@@ -15,12 +15,13 @@ steps:
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
 # Step 2: The Probe (Auto-Detect Model)
-- name: 'ubuntu'  # Lightweight image just for curling
+- name: 'ubuntu'
   secretEnv: ['GOOGLE_API_KEY']
   script: |
     #!/usr/bin/env bash
+    # FIX: Install curl because the base image doesn't have it
+    apt-get -y update && apt-get -y install curl
     chmod +x probe.sh
-    # This runs the probe and creates active_model.txt
     ./probe.sh
 
 # Step 3: Evolution (Ralph)
