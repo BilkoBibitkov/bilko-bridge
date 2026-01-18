@@ -4,6 +4,7 @@
 - **Fail Fast:** Always start bash scripts with `set -e`.
 - **Directory Hygiene:** The execution loop persists state. **Always reset directory** (e.g., `cd /workspace`) at the start of a script or loop.
 - **Syntax Integrity:** Check for closing keywords (`fi`, `done`).
+- **Heredoc Safety:** When generating source code (JS/TS/CSS), **ALWAYS use quoted delimiters** (`cat << 'EOF'`) to prevent Bash from interpreting `${...}` as shell variables. Only use unquoted delimiters (`cat << EOF`) for files that specifically require shell variable injection (like `.env.local`).
 
 ## II. ENVIRONMENT CONSTRAINTS (The "Wrong Toolbox" Lesson)
 - **Current Container:** You run in `ralph-brain` (Python 3.11). **DO NOT** use `npx`, `npm`, or `node` here.
