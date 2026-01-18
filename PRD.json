@@ -1,10 +1,10 @@
 {
   "project_name": "Bilko Bridge",
   "version": "1.1",
-  "status": "evolving",
+  "status": "bootstrapping",
   "requirements": [
     "Create a clean, dark-mode landing page for Bilko Bibitkov.",
-    "Add a 'Login with Google' button that connects to Firebase Auth.",
-    "Include a section that displays the current status of the Ralph evolution loop."
+    "Initialize Firebase Auth using ONLY the API Key, Project ID, and Auth Domain.",
+    "Do NOT use Firebase Storage or Messaging features yet."
   ]
 }
