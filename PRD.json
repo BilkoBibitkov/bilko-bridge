@@ -1,10 +1,12 @@
 {
   "project_name": "Bilko Bridge",
-  "version": "1.1",
-  "status": "bootstrapping",
+  "version": "1.2",
+  "status": "evolution",
   "requirements": [
-    "Create a clean, dark-mode landing page for Bilko Bibitkov.",
-    "Initialize Firebase Auth using ONLY the API Key, Project ID, and Auth Domain.",
-    "Do NOT use Firebase Storage or Messaging features yet."
+    "Maintain the existing Firebase Authentication (Login/Logout functionality).",
+    "Update the global UI theme to reflect the Bulgarian Flag (White, Green, Red).",
+    "The background should use a creative implementation of the Bulgarian flag colors (e.g., a gradient or striped layout).",
+    "Buttons should use the flag's Green or Red colors for emphasis.",
+    "Ensure the text remains readable against the new background colors."
   ]
 }
