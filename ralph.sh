@@ -8,7 +8,7 @@ for ((i=1; i<=MAX_ITERS; i++)); do
     echo "═══════════════════════════════════════════════════════"
     
     # Capture Project Context
-    CONTEXT=$(find src -maxdepth 3 -name "*.tsx" -not -path "*/node_modules/*" -exec grep -l "" {} + 2>/dev/null | xargs cat 2>/dev/null)
+    CONTEXT=$(find src -maxdepth 3 \( -name "*.tsx" -o -name "*.css" \) -not -path "*/node_modules/*" -exec grep -l "" {} + 2>/dev/null | xargs cat 2>/dev/null)
     
     # Call Bridge
     cmd=$(echo -e "PRD:\n$(cat prd.json)\n\nCONTEXT:\n$CONTEXT" | python3 bridge.py)
