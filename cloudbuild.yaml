@@ -1,5 +1,9 @@
+options:
+  substitution_option: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
+
 steps:
-# Step 1: Git & Branch Prep
+# Step 1: Git Prep
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   script: |
@@ -48,6 +52,3 @@ availableSecrets:
     env: 'GH_TOKEN'
   - versionName: projects/bilkobibitkov/secrets/GEMINI_API_KEY/versions/latest
     env: 'GEMINI_API_KEY'
-
-options:
-  logging: CLOUD_LOGGING_ONLY
