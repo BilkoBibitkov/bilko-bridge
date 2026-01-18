@@ -2,11 +2,20 @@ import sys, os
 from google import genai
 
 def run_bridge():
-    # The SDK automatically detects GOOGLE_API_KEY or GEMINI_API_KEY from the environment
+    # 1. Sanitize the Key (Strip invisible newlines/spaces)
+    # We check both possible variable names to be safe
+    raw_key = os.environ.get("GOOGLE_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+    clean_key = raw_key.strip()
+    
+    if not clean_key:
+         print("echo 'FAILURE: API Key is empty after cleanup.'")
+         return
+
     try:
-        client = genai.Client()
+        # Pass the clean key explicitly to the client
+        client = genai.Client(api_key=clean_key)
     except Exception as e:
-        print(f"echo 'FAILURE: GenAI Client initialization failed: {e}'")
+        print(f"echo 'FAILURE: Client init failed: {e}'")
         return
 
     # Read stdin (PRD + Context)
@@ -43,7 +52,9 @@ def run_bridge():
         else:
             print("echo 'FAILURE: Model returned empty command.'")
     except Exception as e:
-        print(f"echo 'FAILURE: AI generation error: {e}'")
+        # Use simple quotes for error message to avoid shell escaping issues
+        safe_error = str(e).replace("'", "").replace('"', "")
+        print(f"echo 'FAILURE: AI generation error: {safe_error}'")
 
 if __name__ == "__main__":
     run_bridge()
