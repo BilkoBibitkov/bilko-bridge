@@ -10,7 +10,8 @@ steps:
     #!/usr/bin/env bash
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
-    git remote set-url origin https://\${GH_TOKEN}@github.com/BilkoBibitkov/bilko-bridge.git
+    # Use \$\$\$ to ensure the final file has \$\$ for Cloud Build
+    git remote set-url origin https://\$\${GH_TOKEN}@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
@@ -18,11 +19,13 @@ steps:
 - name: 'python:3.11'
   secretEnv: ['GEMINI_API_KEY']
   env:
-    - 'GOOGLE_API_KEY=\${GEMINI_API_KEY}'
-    - 'GEMINI_API_KEY=\${GEMINI_API_KEY}'
+    - 'GOOGLE_API_KEY=\$\${GEMINI_API_KEY}'
+    - 'GEMINI_API_KEY=\$\${GEMINI_API_KEY}'
   script: |
     #!/usr/bin/env bash
     pip install google-genai
+    # We use double dollars here as well
+    export GEMINI_API_KEY=\$\${GEMINI_API_KEY}
     chmod +x ralph.sh
     ./ralph.sh 5
 
@@ -37,7 +40,7 @@ steps:
 - name: 'gcr.io/cloud-builders/firebase'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
-# Step 5: Sync
+# Step 5: Sync back to GitHub
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   script: |
