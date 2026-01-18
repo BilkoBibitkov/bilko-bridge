@@ -1,0 +1,37 @@
+steps:
+# Step 1: Configure Git & Secret Access
+- name: 'gcr.io/cloud-builders/git'
+  secretEnv: ['GH_TOKEN']
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    git config --global user.email "ralph-agent@bilkobibitkov.com"
+    git config --global user.name "Ralph Agent"
+    git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
+
+# Step 2: Install Ralph Orchestrator (Rust version)
+- name: 'rust:1.75'
+  entrypoint: 'sh'
+  args:
+  - '-c'
+  - |
+    cargo install ralph-orchestrator
+    # Run Ralph against the PRD.json
+    ralph run -p "Update the website based on the requirements in PRD.json"
+
+# Step 3: Push changes back to GitHub
+- name: 'gcr.io/cloud-builders/git'
+  secretEnv: ['GH_TOKEN']
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    git add .
+    git commit -m "chore: Ralph evolution update [skip ci]" || echo "No changes"
+    git push origin main
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/bilkobibitkov/secrets/GITHUB_PAT/versions/latest
+    env: 'GH_TOKEN'
