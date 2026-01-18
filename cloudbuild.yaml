@@ -1,5 +1,5 @@
 steps:
-# Step 1: Git Prep
+# Step 1: Git & Branch Prep
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   script: |
@@ -8,17 +8,17 @@ steps:
     git config --global user.name "Ralph Agent"
     git remote set-url origin https://\${GH_TOKEN}@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
-    # Standardize PRD filename
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
 # Step 2: Evolution (Ralph)
 - name: 'python:3.11'
   secretEnv: ['GEMINI_API_KEY']
+  # This 'env' block is the key to fixing the Python visibility issue
+  env:
+    - 'GEMINI_API_KEY=\${GEMINI_API_KEY}'
   script: |
     #!/usr/bin/env bash
     pip install google-genai
-    # Ensure the key is available to all sub-processes
-    export GEMINI_API_KEY=\${GEMINI_API_KEY}
     chmod +x ralph.sh
     ./ralph.sh 5
 
@@ -33,7 +33,7 @@ steps:
 - name: 'gcr.io/cloud-builders/firebase'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
-# Step 5: Push Evolution
+# Step 5: Sync Evolution back to GitHub
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   script: |
