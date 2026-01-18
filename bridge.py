@@ -12,19 +12,28 @@ def run_bridge():
     except Exception as e:
         print(f"echo 'FAILURE: Client init failed: {e}'"); return
 
-    # 2. Read "The Secret" (Memory)
+    # 2. DYNAMIC MODEL LOADING (The Fix)
+    # Default to flash if the probe fails, but try to read the file first.
+    target_model = 'gemini-1.5-flash' 
+    if os.path.exists("active_model.txt"):
+        with open("active_model.txt", "r") as f:
+            read_model = f.read().strip()
+            if read_model:
+                target_model = read_model
+
+    # 3. Read Memory (Context)
     memory_content = ""
     if os.path.exists("RALPH_MEMORY.md"):
         with open("RALPH_MEMORY.md", "r") as f:
             memory_content = f.read().strip()
 
-    # 3. Read Input
+    # 4. Read Input
     full_input = sys.stdin.read().strip()
 
-    # 4. Construct System Instruction with Memory
+    # 5. System Instruction
     system_instr = (
         "ROLE: Senior AI Developer Pair-Programmer.\n"
-        f"PERSISTENT MEMORY/RULES:\n{memory_content}\n"  # <--- Memory Injected Here
+        f"PERSISTENT MEMORY:\n{memory_content}\n"
         "MISSION: Implement the user's request found in prd.json by generating a bash script.\n"
         "INSTRUCTIONS:\n"
         "1. Output MUST be a single, executable bash script.\n"
@@ -33,11 +42,11 @@ def run_bridge():
         "4. NO markdown, NO explanations. Just code."
     )
 
-    # 5. Execute
+    # 6. Execute
     try:
-        # We use the specific -001 version to avoid 404 errors
+        # Use the auto-detected model!
         response = client.models.generate_content(
-            model='gemini-1.5-flash-001', 
+            model=target_model, 
             contents=f"PRD AND CONTEXT:\n{full_input}",
             config={'system_instruction': system_instr}
         )
@@ -53,7 +62,7 @@ def run_bridge():
             print("echo 'FAILURE: Model returned empty command.'")
     except Exception as e:
         safe_error = str(e).replace("'", "").replace('"', "")
-        print(f"echo 'FAILURE: AI generation error: {safe_error}'")
+        print(f"echo 'FAILURE: AI generation error using {target_model}: {safe_error}'")
 
 if __name__ == "__main__":
     run_bridge()

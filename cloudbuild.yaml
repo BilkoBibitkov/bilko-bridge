@@ -14,28 +14,37 @@ steps:
     git checkout -B main
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
-# Step 2: Evolution (Ralph)
+# Step 2: The Probe (Auto-Detect Model)
+- name: 'ubuntu'  # Lightweight image just for curling
+  secretEnv: ['GOOGLE_API_KEY']
+  script: |
+    #!/usr/bin/env bash
+    chmod +x probe.sh
+    # This runs the probe and creates active_model.txt
+    ./probe.sh
+
+# Step 3: Evolution (Ralph)
 - name: 'python:3.11'
   secretEnv: ['GOOGLE_API_KEY']
   script: |
     #!/usr/bin/env bash
-    # -q keeps the logs clean
     pip install -q google-genai
     chmod +x ralph.sh
+    # Ralph will now read active_model.txt created in Step 2
     ./ralph.sh 5
 
-# Step 3: Next.js Build
+# Step 4: Next.js Build
 - name: 'node:20'
   script: |
     #!/usr/bin/env bash
     npm install
     npm run build
 
-# Step 4: Firebase Deploy
+# Step 5: Firebase Deploy
 - name: 'gcr.io/bilkobibitkov/firebase'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
-# Step 5: Sync back to GitHub
+# Step 6: Sync back to GitHub
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   script: |
