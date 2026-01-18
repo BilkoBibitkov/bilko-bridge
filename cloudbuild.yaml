@@ -54,6 +54,7 @@ steps:
 
 options:
   substitution_option: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
 
 availableSecrets:
   secretManager:
