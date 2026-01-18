@@ -10,7 +10,8 @@ steps:
     git config --global user.name "Ralph Agent"
     git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
-    if [ -f "PRD.json" ]; then mv PRD.json prd.json; fi
+    # Ensure Ralph sees 'prd.json'
+    if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
 # Step 2: Evolution (Ralph)
 - name: 'python:3.11'
@@ -20,11 +21,12 @@ steps:
   - '-c'
   - |
     pip install google-genai
+    # Inject the key directly into the environment
     export GEMINI_API_KEY=$$GEMINI_API_KEY
     chmod +x ralph.sh
     ./ralph.sh 5
 
-# Step 3: Build & Deploy to Firebase
+# Step 3: Build Site
 - name: 'node:20'
   entrypoint: 'bash'
   args:
@@ -32,9 +34,12 @@ steps:
   - |
     npm install
     npm run build
-    npx firebase-tools deploy --only hosting --project bilkobibitkov --non-interactive
 
-# Step 4: Push Evolution back to GitHub
+# Step 4: Deploy to Firebase
+- name: 'gcr.io/cloud-builders/firebase'
+  args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
+
+# Step 5: Push Evolution back to GitHub
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   entrypoint: 'bash'
