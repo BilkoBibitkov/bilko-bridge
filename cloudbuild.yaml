@@ -10,22 +10,21 @@ steps:
     #!/usr/bin/env bash
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
-    # Use \$\$\$ to ensure the final file has \$\$ for Cloud Build
-    git remote set-url origin https://\$\${GH_TOKEN}@github.com/BilkoBibitkov/bilko-bridge.git
+    # use $$GH_TOKEN so Cloud Build passes it to the shell
+    git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
 # Step 2: Evolution (Ralph)
 - name: 'python:3.11'
   secretEnv: ['GEMINI_API_KEY']
-  env:
-    - 'GOOGLE_API_KEY=\$\${GEMINI_API_KEY}'
-    - 'GEMINI_API_KEY=\$\${GEMINI_API_KEY}'
   script: |
     #!/usr/bin/env bash
     pip install google-genai
-    # We use double dollars here as well
-    export GEMINI_API_KEY=\$\${GEMINI_API_KEY}
+    
+    # Alias the secret key to the name the SDK expects
+    export GOOGLE_API_KEY=$$GEMINI_API_KEY
+    
     chmod +x ralph.sh
     ./ralph.sh 5
 

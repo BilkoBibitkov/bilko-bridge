@@ -2,25 +2,15 @@ import sys, os
 from google import genai
 
 def run_bridge():
-    # The SDK automatically detects GOOGLE_API_KEY or GEMINI_API_KEY
+    # The SDK automatically detects GOOGLE_API_KEY or GEMINI_API_KEY from the environment
     try:
         client = genai.Client()
     except Exception as e:
         print(f"echo 'FAILURE: GenAI Client initialization failed: {e}'")
         return
 
+    # Read stdin (PRD + Context)
     full_input = sys.stdin.read().strip()
-
-    # --- PARSE INPUT ---
-    # Expecting: PRD: <json>\n\nCONTEXT: <files>
-    try:
-        if '\n\n' in full_input:
-            prd_part, context_part = full_input.split('\n\n', 1)
-        else:
-            prd_part, context_part = full_input, ""
-    except ValueError:
-        print("echo 'FAILURE: Could not split PRD and Context.'")
-        return
 
     # --- SYSTEM INSTRUCTION ---
     system_instr = (
@@ -43,9 +33,10 @@ def run_bridge():
         )
         
         clean_cmd = response.text.strip()
-        if clean_cmd.startswith("\`\`\`bash"): clean_cmd = clean_cmd[7:]
-        if clean_cmd.startswith("\`\`\`"): clean_cmd = clean_cmd[3:]
-        if clean_cmd.endswith("\`\`\`"): clean_cmd = clean_cmd[:-3]
+        # Clean up markdown formatting if present
+        if clean_cmd.startswith("```bash"): clean_cmd = clean_cmd[7:]
+        if clean_cmd.startswith("```"): clean_cmd = clean_cmd[3:]
+        if clean_cmd.endswith("```"): clean_cmd = clean_cmd[:-3]
         
         if clean_cmd.strip():
             print(f"set -e; {clean_cmd.strip()}\n echo 'SUCCESS: Ralph evolution iteration complete.'")
