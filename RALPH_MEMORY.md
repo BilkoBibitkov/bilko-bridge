@@ -10,7 +10,7 @@
 - **Delegation:** Your job is to generate files (`package.json`, `tsconfig.json`, `next.config.mjs`) using `cat`.
 - **The Muscle:** The pipeline has a subsequent `node:20` step. Trust it to run `npm install` and `npm run build` based on the files you generate.
 - **Project Scaffolding:** Do not use `create-next-app`. Manually generate the config files.
-- **Idempotency:** The workspace persists across iterations. Your generated script must explicitly clean up before creating. Always run `rm -rf app src` before scaffolding to prevent conflicts between `app/` and `src/app/`.
+- **Idempotency:** The workspace persists across iterations. Your generated script must explicitly clean up before creating. Always run `rm -rf app src .env.local` before scaffolding.
 
 ## III. API & AUTHENTICATION
 - **Model Discovery:** Always read `active_model.txt` to find the correct Model ID.
@@ -23,9 +23,7 @@
 - **Instant Failure:** If a build fails with "Build does not specify logsBucket", it is a YAML Syntax or Secret Definition error. Use 'gcloud builds describe' to identify the validation failure.
 
 ## VI. SECRET MANAGEMENT (STRICT LIMITS)
-- **Available Secrets:** The pipeline **ONLY** provides these three. Do not ask for others.
-  1. `NEXT_PUBLIC_FIREBASE_API_KEY`
-  2. `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-  3. `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- **Forbidden Validations:** Do **NOT** check for or require `STORAGE_BUCKET`, `MESSAGING_SENDER_ID`, or `APP_ID`. These are not configured.
-- **Code Generation:** If the Firebase SDK config requires these fields, pass `undefined` or a dummy string. **Do not exit the script** if they are missing.
+- **Available Secrets:** The pipeline **ONLY** provides `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, and `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`.
+- **Persistence (CRITICAL):** You **MUST** generate a `.env.local` file containing these values. The build step (Node) cannot see the secrets unless they are written to this file.
+- **Forbidden Validations:** Do **NOT** check for `STORAGE_BUCKET`, `MESSAGING_SENDER_ID`, or `APP_ID`.
+- **Type Safety:** For optional fields in `firebaseConfig`, assign the primitive `undefined` (not the string "undefined") to prevent SDK runtime errors.
