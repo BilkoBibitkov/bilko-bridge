@@ -1,5 +1,5 @@
-
 steps:
+# Step 1: Git & Branch Prep
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   entrypoint: 'bash'
@@ -12,6 +12,7 @@ steps:
     git checkout -B main
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
+# Step 2: Evolution (Ralph)
 - name: 'python:3.11'
   secretEnv: ['GEMINI_API_KEY']
   entrypoint: 'bash'
@@ -19,10 +20,12 @@ steps:
   - '-c'
   - |
     pip install google-genai
-    export GEMINI_API_KEY=\$\$GEMINI_API_KEY
+    # Write the key to a .env file so bridge.py can find it
+    echo "GEMINI_API_KEY=\$\$GEMINI_API_KEY" > .env
     chmod +x ralph.sh
     ./ralph.sh 5
 
+# Step 3: Build Site
 - name: 'node:20'
   entrypoint: 'bash'
   args:
@@ -31,9 +34,11 @@ steps:
     npm install
     npm run build
 
+# Step 4: Deploy to Firebase
 - name: 'gcr.io/cloud-builders/firebase'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
+# Step 5: Push Evolution back to GitHub
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
   entrypoint: 'bash'
@@ -50,6 +55,6 @@ availableSecrets:
     env: 'GH_TOKEN'
   - versionName: projects/bilkobibitkov/secrets/GEMINI_API_KEY/versions/latest
     env: 'GEMINI_API_KEY'
+
 options:
   logging: CLOUD_LOGGING_ONLY
-EOF
