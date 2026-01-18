@@ -17,7 +17,6 @@ steps:
   - '-c'
   - |
     cargo install ralph-orchestrator
-    # Run Ralph against the PRD.json
     ralph run -p "Update the website based on the requirements in PRD.json"
 
 # Step 3: Push changes back to GitHub
@@ -35,3 +34,7 @@ availableSecrets:
   secretManager:
   - versionName: projects/bilkobibitkov/secrets/GITHUB_PAT/versions/latest
     env: 'GH_TOKEN'
+
+# THE FIX: Explicitly set logging to Cloud Logging
+options:
+  logging: CLOUD_LOGGING_ONLY
