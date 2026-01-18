@@ -3,7 +3,6 @@ from google import genai
 
 def run_bridge():
     # 1. Force Clean the Key
-    # We grab the raw var, strip whitespace, and pass it explicitly.
     raw_key = os.environ.get("GOOGLE_API_KEY", "")
     clean_key = raw_key.strip()
     
@@ -51,7 +50,6 @@ def run_bridge():
         else:
             print("echo 'FAILURE: Model returned empty command.'")
     except Exception as e:
-        # Remove quotes to prevent shell errors
         safe_error = str(e).replace("'", "").replace('"', "")
         print(f"echo 'FAILURE: AI generation error: {safe_error}'")
 

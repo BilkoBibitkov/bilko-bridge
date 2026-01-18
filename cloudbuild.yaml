@@ -10,7 +10,6 @@ steps:
     #!/usr/bin/env bash
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
-    # $$GH_TOKEN ensures Cloud Build passes the variable to Bash
     git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
@@ -32,7 +31,7 @@ steps:
     npm install
     npm run build
 
-# Step 4: Firebase Deploy (Custom Builder)
+# Step 4: Firebase Deploy
 - name: 'gcr.io/bilkobibitkov/firebase'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
@@ -49,6 +48,5 @@ availableSecrets:
   secretManager:
   - versionName: projects/bilkobibitkov/secrets/GITHUB_PAT/versions/latest
     env: 'GH_TOKEN'
-  # Map the secret directly to the environment variable Python expects
   - versionName: projects/bilkobibitkov/secrets/GEMINI_API_KEY/versions/latest
     env: 'GOOGLE_API_KEY'
