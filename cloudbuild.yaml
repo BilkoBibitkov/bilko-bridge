@@ -3,9 +3,10 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-# Step 1: Git Prep
+# Step 1: Git Prep (Explicitly rooted in /workspace)
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
+  dir: '/workspace'  # <--- EXPLICITLY DEFINED WORK DIRECTORY
   script: |
     #!/usr/bin/env bash
     git config --global user.email "ralph-agent@bilkobibitkov.com"
@@ -14,40 +15,37 @@ steps:
     git checkout -B main
     if [ -f "PRD.json" ]; then cp PRD.json prd.json; fi
 
-# Step 2: The Probe (Auto-Detect Model)
-- name: 'ubuntu'
+# Step 2: Probe & Evolution (Ralph Brain)
+- name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
   secretEnv: ['GOOGLE_API_KEY']
+  dir: '/workspace' # Ensure Ralph also starts in the root
   script: |
     #!/usr/bin/env bash
-    # FIX: Install curl because the base image doesn't have it
-    apt-get -y update && apt-get -y install curl
+    # 1. Run the Probe (curl is pre-installed in ralph-brain)
     chmod +x probe.sh
     ./probe.sh
-
-# Step 3: Evolution (Ralph)
-- name: 'python:3.11'
-  secretEnv: ['GOOGLE_API_KEY']
-  script: |
-    #!/usr/bin/env bash
-    pip install -q google-genai
+    
+    # 2. Run Ralph (python & google-genai are pre-installed in ralph-brain)
     chmod +x ralph.sh
-    # Ralph will now read active_model.txt created in Step 2
     ./ralph.sh 5
 
-# Step 4: Next.js Build
+# Step 3: Next.js Build
 - name: 'node:20'
+  dir: '/workspace'
   script: |
     #!/usr/bin/env bash
     npm install
     npm run build
 
-# Step 5: Firebase Deploy
+# Step 4: Firebase Deploy
 - name: 'gcr.io/bilkobibitkov/firebase'
+  dir: '/workspace'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
-# Step 6: Sync back to GitHub
+# Step 5: Sync
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
+  dir: '/workspace'
   script: |
     #!/usr/bin/env bash
     git add .
