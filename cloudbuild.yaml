@@ -9,18 +9,19 @@ steps:
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
     git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
+    # Force the local branch name to 'main'
+    git checkout -B main
 
-# Step 2: Install AI Agent & Run Ralph (The Bash Way)
-- name: 'node:20'
+# Step 2: Prepare Environment & Run Ralph
+- name: 'python:3.11'
   entrypoint: 'bash'
   args:
   - '-c'
   - |
-    # 1. Install Amp (the engine Ralph uses)
-    npm install -g @anthropic-ai/claude-code # Or your preferred agent
+    # Install the missing brain library
+    pip install google-genai
     
-    # 2. Make Ralph executable and run it
-    # We pass '5' as the number of iterations
+    # Run Ralph
     chmod +x ralph.sh
     ./ralph.sh 5
 
@@ -33,6 +34,7 @@ steps:
   - |
     git add .
     git commit -m "chore: Ralph evolution update [skip ci]" || echo "No changes"
+    # Push explicitly to main
     git push origin main
 
 availableSecrets:
