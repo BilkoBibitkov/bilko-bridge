@@ -36,9 +36,9 @@ steps:
     npm run build
 
 # Step 4: Firebase Deploy
-- name: 'gcr.io/cloud-builders/firebase'
+- name: 'gcr.io/bilkobibitkov/firebase'
   args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
-
+  
 # Step 5: Sync back to GitHub
 - name: 'gcr.io/cloud-builders/git'
   secretEnv: ['GH_TOKEN']
