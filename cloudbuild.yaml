@@ -10,14 +10,19 @@ steps:
     git config --global user.name "Ralph Agent"
     git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
 
-# Step 2: Install Ralph Orchestrator (Rust version)
-- name: 'rust:1.75'
-  entrypoint: 'sh'
+# Step 2: Install AI Agent & Run Ralph (The Bash Way)
+- name: 'node:20'
+  entrypoint: 'bash'
   args:
   - '-c'
   - |
-    cargo install ralph-orchestrator
-    ralph run -p "Update the website based on the requirements in PRD.json"
+    # 1. Install Amp (the engine Ralph uses)
+    npm install -g @anthropic-ai/claude-code # Or your preferred agent
+    
+    # 2. Make Ralph executable and run it
+    # We pass '5' as the number of iterations
+    chmod +x ralph.sh
+    ./ralph.sh 5
 
 # Step 3: Push changes back to GitHub
 - name: 'gcr.io/cloud-builders/git'
@@ -35,6 +40,5 @@ availableSecrets:
   - versionName: projects/bilkobibitkov/secrets/GITHUB_PAT/versions/latest
     env: 'GH_TOKEN'
 
-# THE FIX: Explicitly set logging to Cloud Logging
 options:
   logging: CLOUD_LOGGING_ONLY
