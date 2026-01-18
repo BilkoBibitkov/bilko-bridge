@@ -21,3 +21,7 @@
 
 ## V. DEBUGGING PROTOCOLS
 - **Instant Failure:** If a build fails with "Build does not specify logsBucket", it is a YAML Syntax or Secret Definition error. Use 'gcloud builds describe' to identify the validation failure.
+
+## VI. SECRET MANAGEMENT
+- **Environment Injection:** The pipeline now provides `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, and `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`.
+- **Validation:** Continue to use `if [ -z ... ]` checks to ensure secrets are loaded. It is good practice.
