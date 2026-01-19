@@ -11,6 +11,8 @@ Self-Documentation: Before any file generation step, the script must echo the In
 
 Context Probing: Never assume git history exists. Cloud Build Manual Submissions (gcloud builds submit) upload a ZIP file, stripping .git. Always wrap git commands in checks: `if [ -d .git ]; then ... fi`.
 
+Git Safety Protocol: When running manually (gcloud builds submit), the workspace user often differs from the container user (root). ALWAYS inject `git config --global --add safe.directory /workspace` before running git commands.
+
 II. EVOLUTIONARY STATE (How to Grow)
 Scorched Earth Forbidden: Do NOT wipe the entire project (rm -rf src or rm -rf node_modules). We are evolving, not restarting.
 
@@ -43,11 +45,9 @@ Builder: Use gcr.io/bilkobibitkov/firebase.
 
 Anchor Files: Every deployment REQUIRES firebase.json and .firebaserc.
 
-firebase.json must point to the out or .next directory.
+Explicit Targeting: Do NOT rely on default site resolution. In firebase.json, you MUST hardcode the "site" property (e.g., "site": "bilkobibitkov") to avoid "Assertion failed" or "Site not found" errors.
 
-.firebaserc must map the 'default' alias to the project ID bilkobibitkov.
-
-Even in Evolution Mode, check if these exist; if not, create them.
+API Readiness: Ensure `firebasehosting.googleapis.com` is enabled before attempting deployment.
 
 VI. DEBUGGING & FAILURES
 Model Discovery: Always read active_model.txt to find the correct Model ID.
@@ -74,3 +74,15 @@ Resolution: Added Section I "Context Probing". For manual debugs, created .gclou
 Failure [Ghost Build]: Build marked SUCCESS, but nothing changed.
 Cause: The "Docker Image" trigger fired (creating the brain), but the "App Pipeline" trigger was missing.
 Resolution: Always verify the Build Trigger Name/ID in logs to ensure the correct pipeline is running.
+
+Failure [Git Ownership]: Step 0 crashed with "fatal: detected dubious ownership".
+Cause: User ID mismatch in manual builds.
+Resolution: Added "Git Safety Protocol" (safe.directory) to Section I.
+
+Failure [Self-Copy]: Step 0 crashed with "cp: 'prd.json' and 'prd.json' are the same file".
+Cause: Redundant file copy logic.
+Resolution: Removed the bad line. Lesson: Don't copy files to themselves.
+
+Failure [Ambiguous Target]: Firebase Deploy crashed with "Assertion failed".
+Cause: CLI couldn't map the config to a specific site.
+Resolution: Added "Explicit Targeting" rule to Section V (must set "site" in firebase.json).

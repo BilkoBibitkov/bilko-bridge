@@ -5,11 +5,11 @@ steps:
   dir: '/workspace'
   script: |
     #!/usr/bin/env bash
+    git config --global --add safe.directory /workspace
     git config --global user.email "ralph-agent@bilkobibitkov.com"
     git config --global user.name "Ralph Agent"
     git remote set-url origin https://$$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
     git checkout -B main
-    if [ -f "prd.json" ]; then cp prd.json prd.json; fi
 
 # Step 2: The Radar (Probe)
 - name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
