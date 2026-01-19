@@ -36,6 +36,8 @@
   * *Resolution:* Section VI (Cooling Protocol) now enforces a 60-second wait between attempts.
 * **Failure [Webpack Undici]:** Dependency version conflict.
   * *Resolution:* Lock Next.js to exactly `14.2.4` and Firebase to `10.12.2`.
+* **Failure [Build 8b198206]:** Import of missing `./page.module.css` caused Webpack crash.
+  * *Resolution:* PREFER Tailwind utility classes. NEVER import local CSS modules unless you explicitly create the file in the same iteration.
 
 ### VI. OPTIMIZATION & RESILIENCE (COOLING PROTOCOL)
 * **One-Shot Goal:** Fulfill Branding + Design + Content + Admin Config in Iteration 1.
@@ -45,3 +47,4 @@
 ### VII. SOVEREIGN IDENTITY
 * **Language:** Respect Bulgarian heritage. 
 * **Facts:** When requested, include verified historical facts regarding the Cyrillic alphabet, the 681 AD establishment, and Rose Oil production.
+
