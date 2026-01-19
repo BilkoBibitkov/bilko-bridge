@@ -1,57 +1,94 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <h1 className="text-6xl font-bold text-center w-full my-8">
+      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
+        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-100 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
           BILKO BIBITKOV LIVES
-        </h1>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        {/* Placeholder for future image or content */}
-      </div>
-
-      <section className="mt-16 w-full max-w-5xl text-center">
-        <h2 className="text-4xl font-semibold mb-8">Heritage: 5 Fascinating Facts About Bulgaria</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
-          <div className="p-6 border border-gray-700 rounded-lg shadow-md bg-gray-800">
-            <h3 className="text-xl font-bold mb-2">1. The Cyrillic Alphabet</h3>
-            <p className="text-gray-300">
-              The Cyrillic alphabet, used by over 250 million people in Eastern Europe and Asia, was developed in the First Bulgarian Empire in the 9th century. It was created by the disciples of Saints Cyril and Methodius.
-            </p>
-          </div>
-          <div className="p-6 border border-gray-700 rounded-lg shadow-md bg-gray-800">
-            <h3 className="text-xl font-bold mb-2">2. Establishment in 681 AD</h3>
-            <p className="text-gray-300">
-              Bulgaria is one of the oldest European countries and the only one that hasn't changed its name since its establishment in 681 AD. It was founded by Khan Asparuh.
-            </p>
-          </div>
-          <div className="p-6 border border-gray-700 rounded-lg shadow-md bg-gray-800">
-            <h3 className="text-xl font-bold mb-2">3. Rose Oil Production</h3>
-            <p className="text-gray-300">
-              Bulgaria is the world's largest producer of rose oil, an essential ingredient in perfumes and cosmetics. The Kazanlak Rose Valley is famous for its vast fields of oil-bearing roses.
-            </p>
-          </div>
-          <div className="p-6 border border-gray-700 rounded-lg shadow-md bg-gray-800">
-            <h3 className="text-xl font-bold mb-2">4. Ancient Thracian Gold</h3>
-            <p className="text-gray-300">
-              Bulgaria boasts a rich Thracian heritage, with numerous archaeological sites and some of the world's oldest and most exquisite gold treasures, dating back thousands of years.
-            </p>
-          </div>
-          <div className="p-6 border border-gray-700 rounded-lg shadow-md bg-gray-800">
-            <h3 className="text-xl font-bold mb-2">5. Origin of Bulgarian Yogurt</h3>
-            <p className="text-gray-300">
-              The unique Lactobacillus bulgaricus bacterium, responsible for the distinct taste and health benefits of Bulgarian yogurt, was named after the country where it was discovered and widely used.
-            </p>
-          </div>
+        </p>
+        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-zinc-800 lg:static lg:h-auto lg:w-auto lg:bg-none">
+          <a
+            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0 dark:invert"
+            href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src="/next.svg"
+              alt="Next.js Logo"
+              className="dark:invert"
+              width={100}
+              height={24}
+              priority
+            />
+          </a>
         </div>
-      </section>
+      </div>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        {/* Existing links/cards if any, or remove if not needed */}
+      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl after:absolute after:-bottom-32 after:left-1/2 after:-z-10 after:h-[180px] after:w-[240px] after:-translate-x-1/2 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl lg:static lg:w-auto  ">
+        <p className="text-center">
+          Bulgaria, established in 681 AD, boasts a rich history, including the creation of the Cyrillic alphabet. It is also famous for its rose oil production.
+        </p>
+      </div>
+
+      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
+        <a
+          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <h2 className={`mb-3 text-2xl font-semibold`}>
+            Docs <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">→</span>
+          </h2>
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
+            Find in-depth information about Next.js features and API.
+          </p>
+        </a>
+
+        <a
+          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <h2 className={`mb-3 text-2xl font-semibold`}>
+            Learn <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">→</span>
+          </h2>
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
+            Learn about Next.js in an interactive course with&nbsp;quizzes!
+          </p>
+        </a>
+
+        <a
+          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <h2 className={`mb-3 text-2xl font-semibold`}>
+            Templates <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">→</span>
+          </h2>
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
+            Discover and deploy boilerplate example Next.js&nbsp;projects.
+          </p>
+        </a>
+
+        <a
+          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <h2 className={`mb-3 text-2xl font-semibold`}>
+            Deploy <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">→</span>
+          </h2>
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
+            Instantly deploy your Next.js site to a shareable URL with Vercel.
+          </p>
+        </a>
       </div>
     </main>
-  );
+  )
 }
