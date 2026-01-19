@@ -31,6 +31,8 @@ Delegation: Your job is to generate files (package.json, tsconfig.json, next.con
 
 Project Scaffolding: Do not use create-next-app. Manually generate the config files.
 
+Next.js Export Protocol: In Next.js 14+, do NOT use `next export`. Configure `output: 'export'` in `next.config.mjs` and simply run `next build`. The `build` script in `package.json` must be `"next build"`.
+
 IV. SECRET & CONFIG MANAGEMENT
 Available Secrets: The pipeline ONLY provides NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_PROJECT_ID, and NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN.
 
@@ -86,3 +88,7 @@ Resolution: Removed the bad line. Lesson: Don't copy files to themselves.
 Failure [Ambiguous Target]: Firebase Deploy crashed with "Assertion failed".
 Cause: CLI couldn't map the config to a specific site.
 Resolution: Added "Explicit Targeting" rule to Section V (must set "site" in firebase.json).
+
+Failure [Next.js Export]: Build failed with `error: unknown option '-o'`.
+Cause: Used deprecated `next export` command in package.json.
+Resolution: Added "Next.js Export Protocol" to Section III.

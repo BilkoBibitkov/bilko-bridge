@@ -1,8 +1,10 @@
 {
-  "mission": "System Health Check",
+  "version": "1.1",
   "requirements": [
-    "Create a file named verification.txt in the root directory",
-    "Write the text 'Ralph Lives' into it",
-    "List the current directory to prove it exists"
+    "Tech Stack: Next.js 14, Tailwind CSS, Firebase Hosting.",
+    "Design: The page background must be a vertical tricolor of White, Green, and Red (The Bulgarian Flag).",
+    "Content: Display the text 'Ralph Lives' in the center.",
+    "Constraint: Do NOT include a 'Start Building' button. Remove it if it exists.",
+    "Auth: Keep existing Firebase Auth integration if present."
   ]
 }
