@@ -22,6 +22,10 @@
 
 ## IV. DEPLOYMENT
 - **Builder:** Use `gcr.io/bilkobibitkov/firebase`.
+- **Anchor Files:** Every deployment REQUIRES `firebase.json` and `.firebaserc`. 
+  - `firebase.json` must point to the `out` or `.next` directory.
+  - `.firebaserc` must map the 'default' alias to the project ID `bilkobibitkov`.
+  - Even in Evolution Mode, check if these exist; if not, create them.
 
 ## V. DEBUGGING PROTOCOLS
 - **Instant Failure:** If a build fails with "Build does not specify logsBucket", it is a YAML Syntax or Secret Definition error. Use 'gcloud builds describe' to identify the validation failure.

@@ -3,8 +3,6 @@
   "version": "1.1",
   "status": "evolving",
   "requirements": [
-    "Create a clean, dark-mode landing page for Bilko Bibitkov.",
-    "Add a 'Login with Google' button that connects to Firebase Auth.",
-    "Include a section that displays the current status of the Ralph evolution loop."
+    "Create a clean, dark-mode landing page for Bilko Bibitkov."
   ]
 }
