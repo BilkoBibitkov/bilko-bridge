@@ -2,30 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Prevent scrollbars if background is larger than viewport */
+  font-family: sans-serif; /* A sensible fallback font */
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: transparent; /* Ensure body does not have its own background */
-  min-height: 100vh; /* Ensure body takes full height for main to fill */
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg');
+  background-size: cover; /* Ensures the flag covers the entire background */
+  background-position: center; /* Centers the flag image */
+  background-repeat: no-repeat; /* Prevents the flag from repeating */
+  background-attachment: fixed; /* Keeps the background fixed during scroll (though overflow hidden prevents scroll) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.bg-bulgarian-flag {
-  /* Bulgarian flag colors: White (#FFFFFF), Green (#00966E), Red (#D62612) */
-  background-image: linear-gradient(to bottom, #FFFFFF 33.33%, #00966E 33.33%, #00966E 66.66%, #D62612 66.66%);
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+/* Ensure the main content container respects the full viewport height */
+main {
+  position: relative;
+  z-index: 10; /* Ensures the text is above the background */
+  display: flex; /* Tailwind's flex will also apply */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh; /* Make main take full viewport height to center content effectively */
+}
+
+/* Styling for the prominent "Bilko lives" text */
+h1 {
+  color: white; /* Ensures text is visible and contrasts well with the flag */
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8); /* Adds depth and makes text pop */
+  /* Tailwind classes like text-6xl, font-extrabold from page.tsx will augment this */
 }
