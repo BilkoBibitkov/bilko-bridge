@@ -33,6 +33,8 @@ Project Scaffolding: Do not use create-next-app. Manually generate the config fi
 
 Next.js Export Protocol: In Next.js 14+, do NOT use `next export`. Configure `output: 'export'` in `next.config.mjs` and simply run `next build`. The `build` script in `package.json` must be `"next build"`.
 
+Dependency Baseline: To avoid `undici` and webpack parse errors, explicitly set `"next": "^14.2.4"` and `"firebase": "^10.12.2"` in `package.json`. Do not accept older defaults (like 14.1.0).
+
 IV. SECRET & CONFIG MANAGEMENT
 Available Secrets: The pipeline ONLY provides NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_PROJECT_ID, and NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN.
 
@@ -92,3 +94,7 @@ Resolution: Added "Explicit Targeting" rule to Section V (must set "site" in fir
 Failure [Next.js Export]: Build failed with `error: unknown option '-o'`.
 Cause: Used deprecated `next export` command in package.json.
 Resolution: Added "Next.js Export Protocol" to Section III.
+
+Failure [Webpack Undici Conflict]: Build failed with `Module parse failed: Unexpected token`.
+Cause: Next.js 14.1.0 bundler cannot handle modern syntax in newer Firebase SDKs.
+Resolution: Added "Dependency Baseline" (Force Next.js 14.2+) to Section III.
