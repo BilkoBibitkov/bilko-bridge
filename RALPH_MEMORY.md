@@ -1,10 +1,3 @@
-This is a solid, high-functioning list. It moves from syntax to state to safety.
-
-I have re-ordered a few items within the sections to follow the natural logical flow of an execution loop: Prepare → Protect → Perform → Persist. I also moved the "Regression Checklist" into the Evolutionary State section because it's a structural check, not an API check.
-
-Here is the re-ordered and verified RALPH_MEMORY.md.
-
-RALPH MEMORY LOG
 I. CRITICAL EXECUTION RULES (How to Run)
 Fail Fast: Always start bash scripts with set -e.
 
@@ -15,6 +8,8 @@ Heredoc Safety: When generating source code (JS/TS/CSS), ALWAYS use quoted delim
 Syntax Integrity: Check for closing keywords (fi, done).
 
 Self-Documentation: Before any file generation step, the script must echo the Intent and the Specific Changes being made. This creates a searchable audit trail in the Cloud Build logs.
+
+Context Probing: Never assume git history exists. Cloud Build Manual Submissions (gcloud builds submit) upload a ZIP file, stripping .git. Always wrap git commands in checks: `if [ -d .git ]; then ... fi`.
 
 II. EVOLUTIONARY STATE (How to Grow)
 Scorched Earth Forbidden: Do NOT wipe the entire project (rm -rf src or rm -rf node_modules). We are evolving, not restarting.
@@ -61,15 +56,21 @@ Validation: Abort if secrets are empty.
 
 Instant Failure: If a build fails with "Build does not specify logsBucket", it is a YAML Syntax or Secret Definition error. Use gcloud builds describe to identify the validation failure.
 
+Identity Check: Manual builds often use the Compute Engine Service Account, while Triggers use the Cloud Build Service Account. Ensure BOTH have `secretAccessor` permissions.
+
 VII. SCAR TISSUE (Historical Post-Mortems)
 Failure [50ba0535]: Firebase Deploy failed with exit code 2.
-
 Cause: Missing firebase.json and .firebaserc because the "Wipe" rule was removed without adding a "Validation of Anchors" rule.
-
 Resolution: Created Section V "Anchor Files" rule.
 
 Failure [Iter 3 - Bad Substitution]: Shell crashed on ${inter.className}.
-
 Cause: Unquoted Heredoc interpreted React/JS syntax as Bash variables.
-
 Resolution: Section I "Heredoc Safety" rule.
+
+Failure [Manual Build - Missing Git]: Step 1 crashed with "fatal: not a git repository".
+Cause: `gcloud builds submit` uploads a zip file and ignores .git by default.
+Resolution: Added Section I "Context Probing". For manual debugs, created .gcloudignore allowing .git.
+
+Failure [Ghost Build]: Build marked SUCCESS, but nothing changed.
+Cause: The "Docker Image" trigger fired (creating the brain), but the "App Pipeline" trigger was missing.
+Resolution: Always verify the Build Trigger Name/ID in logs to ensure the correct pipeline is running.
