@@ -1,53 +1,8 @@
 {
-  "project_name": "Bilko Bridge",
-  "version": "1.2",
-  "status": "evolution",
-  "branchName": "feature/bulgarian-theme",
-  "userStories": [
-    {
-      "id": 1,
-      "title": "Verify existing Firebase Authentication",
-      "description": "Ensure that the current Login/Logout functionality is working as expected before applying UI changes. Do not modify the logic, only verify current state.",
-      "acceptanceCriteria": [
-        "Login works with valid credentials",
-        "Logout successfully clears session",
-        "Verify in browser using dev-browser skill"
-      ],
-      "passes": false
-    },
-    {
-      "id": 2,
-      "title": "Implement Bulgarian Flag Background Gradient",
-      "description": "Update the global CSS/Theme to implement a creative background using the Bulgarian flag colors: White (#FFFFFF), Green (#00966E), and Red (#D62612). Use a gradient or striped layout.",
-      "acceptanceCriteria": [
-        "Background displays all three colors of the Bulgarian flag",
-        "The implementation is global across the app",
-        "Verify visual layout in browser using dev-browser skill"
-      ],
-      "passes": false
-    },
-    {
-      "id": 3,
-      "title": "Style Buttons with Bulgarian Flag Accents",
-      "description": "Update primary and secondary button components to use the Green (#00966E) and Red (#D62612) colors for emphasis.",
-      "acceptanceCriteria": [
-        "Primary buttons use the flag's Green",
-        "Danger or emphasis buttons use the flag's Red",
-        "Buttons maintain consistent hover/active states",
-        "Verify in browser using dev-browser skill"
-      ],
-      "passes": false
-    },
-    {
-      "id": 4,
-      "title": "Global Text Readability Audit and Fix",
-      "description": "Ensure all text elements (headers, body, labels) remain readable against the new Bulgarian flag background and button colors. Adjust text colors (e.g., to White or Dark Gray) as necessary for contrast.",
-      "acceptanceCriteria": [
-        "Contrast ratios meet accessibility standards for all text",
-        "No text is lost against the background colors",
-        "Verify readability in browser using dev-browser skill"
-      ],
-      "passes": false
-    }
+  "mission": "System Health Check",
+  "requirements": [
+    "Create a file named verification.txt in the root directory",
+    "Write the text 'Ralph Lives' into it",
+    "List the current directory to prove it exists"
   ]
 }
