@@ -1,61 +1,65 @@
 steps:
-# Step 1: Git Prep
-- name: 'gcr.io/cloud-builders/git'
-  secretEnv: ['GH_TOKEN']
-  dir: '/workspace'
-  script: |
-    #!/usr/bin/env bash
-    git config --global --add safe.directory /workspace
-    git config --global user.email "ralph-agent@bilkobibitkov.com"
-    git config --global user.name "Ralph Agent"
-    git remote set-url origin https://$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
-    git checkout -B main
+  # --- Step 0: Git Prep & Auth ---
+  - name: 'gcr.io/cloud-builders/git'
+    id: 'Git Configuration'
+    secretEnv: ['GH_TOKEN']
+    script: |
+      #!/usr/bin/env bash
+      git config --global --add safe.directory /workspace
+      git config --global user.email "ralph@bilkobibitkov.com"
+      git config --global user.name "Ralph (AI Architect)"
+      git remote set-url origin https://$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
+      git checkout -B main
 
-# Step 2: The Radar (Probe)
-- name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
-  secretEnv: ['GOOGLE_API_KEY']
-  dir: '/workspace'
-  script: |
-    #!/usr/bin/env bash
-    chmod +x probe.sh
-    ./probe.sh
+  # --- Step 1: The Radar (Probe) ---
+  - name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
+    id: 'Probing Models'
+    secretEnv: ['GOOGLE_API_KEY']
+    script: |
+      #!/usr/bin/env bash
+      chmod +x probe.sh
+      ./probe.sh
 
-# Step 3: The Brain (Ralph)
-- name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
-  secretEnv: ['GOOGLE_API_KEY', 'FIREBASE_API_KEY', 'FIREBASE_PROJECT_ID', 'FIREBASE_AUTH_DOMAIN']
-  dir: '/workspace'
-  script: |
-    #!/usr/bin/env bash
-    # Export secrets to environment variables Ralph expects
-    export NEXT_PUBLIC_FIREBASE_API_KEY=$FIREBASE_API_KEY
-    export NEXT_PUBLIC_FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
-    export NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN
-    
-    chmod +x ralph.sh
-    ./ralph.sh 5
+  # --- Step 2: The Sovereign Brain (Ralph) ---
+  - name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
+    id: 'Ralph Evolution'
+    secretEnv: ['GOOGLE_API_KEY', 'FIREBASE_API_KEY', 'FIREBASE_PROJECT_ID', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_ADMIN_KEY']
+    script: |
+      #!/usr/bin/env bash
+      # 1. Export standard secrets for backward compatibility
+      export NEXT_PUBLIC_FIREBASE_API_KEY=$FIREBASE_API_KEY
+      export NEXT_PUBLIC_FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
+      export NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN
+      
+      # 2. Inject the Sovereign Admin Key for Admin SDK tasks
+      echo "$FIREBASE_ADMIN_KEY" > service-account.json
+      
+      # 3. Launch evolution
+      chmod +x ralph.sh
+      ./ralph.sh 5
 
-# Step 4: Next.js Build
-- name: 'node:20'
-  dir: '/workspace'
-  script: |
-    #!/usr/bin/env bash
-    npm install
-    npm run build
+  # --- Step 3: Application Build (Node) ---
+  - name: 'node:20'
+    id: 'App Build'
+    script: |
+      #!/usr/bin/env bash
+      npm install
+      npm run build
 
-# Step 5: Firebase Deploy
-- name: 'gcr.io/bilkobibitkov/firebase'
-  dir: '/workspace'
-  args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
+  # --- Step 4: Firebase Deployment ---
+  - name: 'gcr.io/bilkobibitkov/firebase'
+    id: 'Firebase Deploy'
+    args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
-# Step 6: Sync
-- name: 'gcr.io/cloud-builders/git'
-  secretEnv: ['GH_TOKEN']
-  dir: '/workspace'
-  script: |
-    #!/usr/bin/env bash
-    git add .
-    git commit -m "chore: Ralph evolution update [skip ci]" || echo "No changes"
-    git push origin main
+  # --- Step 5: State Synchronization ---
+  - name: 'gcr.io/cloud-builders/git'
+    id: 'Push Evolution'
+    secretEnv: ['GH_TOKEN']
+    script: |
+      #!/usr/bin/env bash
+      git add .
+      git commit -m "chore: Ralph evolution update [skip ci]" || echo "No changes to sync"
+      git push origin main
 
 options:
   substitution_option: ALLOW_LOOSE
@@ -73,3 +77,7 @@ availableSecrets:
     env: 'FIREBASE_PROJECT_ID'
   - versionName: projects/$PROJECT_ID/secrets/FIREBASE_AUTH_DOMAIN/versions/latest
     env: 'FIREBASE_AUTH_DOMAIN'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_ADMIN_KEY/versions/latest
+    env: 'FIREBASE_ADMIN_KEY'
+
+timeout: '1200s'
