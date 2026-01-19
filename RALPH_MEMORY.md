@@ -1,37 +1,75 @@
-# RALPH MEMORY LOG
+This is a solid, high-functioning list. It moves from syntax to state to safety.
 
-## I. CRITICAL EXECUTION RULES
-- **Fail Fast:** Always start bash scripts with `set -e`.
-- **Directory Hygiene:** The execution loop persists state. **Always reset directory** (e.g., `cd /workspace`) at the start of a script or loop.
-- **Syntax Integrity:** Check for closing keywords (`fi`, `done`).
-- **Heredoc Safety:** When generating source code (JS/TS/CSS), **ALWAYS use quoted delimiters** (`cat << 'EOF'`) to prevent Bash from interpreting `${...}` as shell variables. Only use unquoted delimiters (`cat << EOF`) for files that specifically require shell variable injection (like `.env.local`).
+I have re-ordered a few items within the sections to follow the natural logical flow of an execution loop: Prepare → Protect → Perform → Persist. I also moved the "Regression Checklist" into the Evolutionary State section because it's a structural check, not an API check.
 
-## II. ENVIRONMENT CONSTRAINTS (The "Wrong Toolbox" Lesson)
-- **Current Container:** You run in `ralph-brain` (Python 3.11). **DO NOT** use `npx`, `npm`, or `node` here.
-- **Delegation:** Your job is to generate files (`package.json`, `tsconfig.json`, `next.config.mjs`) using `cat`.
-- **The Muscle:** The pipeline has a subsequent `node:20` step. Trust it to run `npm install` and `npm run build`.
-- **Project Scaffolding:** Do not use `create-next-app`. Manually generate the config files.
-- **Evolutionary State (CRITICAL):** Do **NOT** wipe the entire project (`rm -rf src` or `rm -rf node_modules`). We are evolving, not restarting.
-  - **Overwrite** existing files with the new version containing ALL requirements (Old + New).
-  - **Clean Conflicts:** Explicitly delete specific files *only* if you are changing file extensions (e.g., `rm src/app/page.js` before creating `src/app/page.tsx`).
-  - **Preserve Dependencies:** Keep `node_modules` and `package-lock.json` to make the build faster.
+Here is the re-ordered and verified RALPH_MEMORY.md.
 
-## III. API & AUTHENTICATION
-- **Model Discovery:** Always read `active_model.txt` to find the correct Model ID.
-- **Validation:** Abort if secrets are empty.
+RALPH MEMORY LOG
+I. CRITICAL EXECUTION RULES (How to Run)
+Fail Fast: Always start bash scripts with set -e.
 
-## IV. DEPLOYMENT
-- **Builder:** Use `gcr.io/bilkobibitkov/firebase`.
-- **Anchor Files:** Every deployment REQUIRES `firebase.json` and `.firebaserc`. 
-  - `firebase.json` must point to the `out` or `.next` directory.
-  - `.firebaserc` must map the 'default' alias to the project ID `bilkobibitkov`.
-  - Even in Evolution Mode, check if these exist; if not, create them.
+Directory Hygiene: The execution loop persists state. Always reset directory (e.g., cd /workspace) at the start of a script or loop.
 
-## V. DEBUGGING PROTOCOLS
-- **Instant Failure:** If a build fails with "Build does not specify logsBucket", it is a YAML Syntax or Secret Definition error. Use 'gcloud builds describe' to identify the validation failure.
+Heredoc Safety: When generating source code (JS/TS/CSS), ALWAYS use quoted delimiters (cat << 'EOF') to prevent Bash from interpreting ${...} as shell variables. Only use unquoted delimiters (cat << EOF) for files that specifically require shell variable injection (like .env.local).
 
-## VI. SECRET MANAGEMENT (STRICT LIMITS)
-- **Available Secrets:** The pipeline **ONLY** provides `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, and `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`.
-- **Persistence (CRITICAL):** You **MUST** generate a `.env.local` file containing these values.
-- **Forbidden Validations:** Do **NOT** check for `STORAGE_BUCKET`, `MESSAGING_SENDER_ID`, or `APP_ID`.
-- **Type Safety:** For optional fields in `firebaseConfig`, assign the primitive `undefined`.
+Syntax Integrity: Check for closing keywords (fi, done).
+
+Self-Documentation: Before any file generation step, the script must echo the Intent and the Specific Changes being made. This creates a searchable audit trail in the Cloud Build logs.
+
+II. EVOLUTIONARY STATE (How to Grow)
+Scorched Earth Forbidden: Do NOT wipe the entire project (rm -rf src or rm -rf node_modules). We are evolving, not restarting.
+
+Regression Checklist: Before "Evolutionary" overwrites, explicitly check: "Does this new file still contain the code for previous requirements (e.g., Firebase Auth)?" If a new file version is significantly smaller than the old one, double-check for accidental logic deletion.
+
+Surgical Overwrites: Overwrite existing files with the new version containing ALL requirements (Old + New).
+
+Clean Conflicts: Explicitly delete specific files only if you are changing file extensions (e.g., rm src/app/page.js before creating src/app/page.tsx).
+
+Preserve Dependencies: Keep node_modules and package-lock.json to make the build faster.
+
+III. ENVIRONMENT CONSTRAINTS (Toolbox Limits)
+Current Container: You run in ralph-brain (Python 3.11). DO NOT use npx, npm, or node here.
+
+Delegation: Your job is to generate files (package.json, tsconfig.json, next.config.mjs) using cat. The pipeline has a subsequent node:20 step to handle the heavy lifting.
+
+Project Scaffolding: Do not use create-next-app. Manually generate the config files.
+
+IV. SECRET & CONFIG MANAGEMENT
+Available Secrets: The pipeline ONLY provides NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_PROJECT_ID, and NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN.
+
+Persistence (CRITICAL): You MUST generate a .env.local file containing these values. The build step cannot see the secrets unless they are written to this file.
+
+Forbidden Validations: Do NOT check for STORAGE_BUCKET, MESSAGING_SENDER_ID, or APP_ID.
+
+Type Safety: For optional fields in firebaseConfig, assign the primitive undefined.
+
+V. DEPLOYMENT & ANCHORS
+Builder: Use gcr.io/bilkobibitkov/firebase.
+
+Anchor Files: Every deployment REQUIRES firebase.json and .firebaserc.
+
+firebase.json must point to the out or .next directory.
+
+.firebaserc must map the 'default' alias to the project ID bilkobibitkov.
+
+Even in Evolution Mode, check if these exist; if not, create them.
+
+VI. DEBUGGING & FAILURES
+Model Discovery: Always read active_model.txt to find the correct Model ID.
+
+Validation: Abort if secrets are empty.
+
+Instant Failure: If a build fails with "Build does not specify logsBucket", it is a YAML Syntax or Secret Definition error. Use gcloud builds describe to identify the validation failure.
+
+VII. SCAR TISSUE (Historical Post-Mortems)
+Failure [50ba0535]: Firebase Deploy failed with exit code 2.
+
+Cause: Missing firebase.json and .firebaserc because the "Wipe" rule was removed without adding a "Validation of Anchors" rule.
+
+Resolution: Created Section V "Anchor Files" rule.
+
+Failure [Iter 3 - Bad Substitution]: Shell crashed on ${inter.className}.
+
+Cause: Unquoted Heredoc interpreted React/JS syntax as Bash variables.
+
+Resolution: Section I "Heredoc Safety" rule.
