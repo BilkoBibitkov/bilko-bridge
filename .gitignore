@@ -1,20 +1,17 @@
 # Dependencies
 node_modules/
 
-# Next.js build output
+# Next.js build
 .next/
 out/
 
-# Environment variables (Crucial)
-.env
+# Local Environment Secrets
 .env.local
 .env.*.local
 *.json.local
 
-# Service Account Keys
+# Service Account Keys (Safety First)
 *.json
 
 # Logs
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
