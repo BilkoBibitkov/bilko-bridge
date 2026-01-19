@@ -1,5 +1,5 @@
 steps:
-  # --- Step 0: Git Prep & Auth ---
+  # --- Step 0: Git Configuration ---
   - name: 'gcr.io/cloud-builders/git'
     id: 'Git Configuration'
     secretEnv: ['GH_TOKEN']
@@ -11,32 +11,44 @@ steps:
       git remote set-url origin https://$GH_TOKEN@github.com/BilkoBibitkov/bilko-bridge.git
       git checkout -B main
 
-  # --- Step 1: The Radar (Probe) ---
+  # --- Step 1: Model Selection ---
   - name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
     id: 'Probing Models'
     secretEnv: ['GOOGLE_API_KEY']
     script: |
       #!/usr/bin/env bash
-      chmod +x probe.sh
-      ./probe.sh
+      # Probe for health. If 503 is detected, this script will log it.
+      python bridge.py --probe || echo "Warning: Primary model capacity low."
 
-  # --- Step 2: The Sovereign Brain (Ralph) ---
+  # --- Step 2: The Resilient Brain (Ralph) ---
   - name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
     id: 'Ralph Evolution'
     secretEnv: ['GOOGLE_API_KEY', 'FIREBASE_API_KEY', 'FIREBASE_PROJECT_ID', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_ADMIN_KEY']
     script: |
       #!/usr/bin/env bash
-      # 1. Export standard secrets for backward compatibility
+      set -e
       export NEXT_PUBLIC_FIREBASE_API_KEY=$FIREBASE_API_KEY
       export NEXT_PUBLIC_FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
       export NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN
-      
-      # 2. Inject the Sovereign Admin Key for Admin SDK tasks
       echo "$FIREBASE_ADMIN_KEY" > service-account.json
+
+      # RESILIENCE LOOP: Try up to 3 times with increasing wait times
+      MAX_RETRIES=3
+      RETRY_COUNT=0
       
-      # 3. Launch evolution
-      chmod +x ralph.sh
-      ./ralph.sh 5
+      until python bridge.py || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        WAIT_TIME=$((RETRY_COUNT * 60)) # Wait 60s, then 120s
+        echo "503/Overload detected. Retrying in $WAIT_TIME seconds (Attempt $RETRY_COUNT/$MAX_RETRIES)..."
+        sleep $WAIT_TIME
+      done
+
+      # FALLBACK: If flash is still dead, try the Pro model
+      if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+        echo "Primary model failed. Attempting fallback to gemini-1.5-pro..."
+        export PREFERRED_MODEL="gemini-1.5-pro"
+        python bridge.py
+      fi
 
   # --- Step 3: Application Build (Node) ---
   - name: 'node:20'
@@ -58,12 +70,8 @@ steps:
     script: |
       #!/usr/bin/env bash
       git add .
-      git commit -m "chore: Ralph evolution update [skip ci]" || echo "No changes to sync"
+      git commit -m "chore: Ralph evolution update [skip ci]" || echo "No changes"
       git push origin main
-
-options:
-  substitution_option: ALLOW_LOOSE
-  logging: CLOUD_LOGGING_ONLY
 
 availableSecrets:
   secretManager:
@@ -80,4 +88,7 @@ availableSecrets:
   - versionName: projects/$PROJECT_ID/secrets/FIREBASE_ADMIN_KEY/versions/latest
     env: 'FIREBASE_ADMIN_KEY'
 
-timeout: '1200s'
+options:
+  substitution_option: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
+timeout: '1500s'
