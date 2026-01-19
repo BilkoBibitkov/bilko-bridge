@@ -21,10 +21,10 @@
 * **Admin SDK:** Use `firebase-admin` for server-side logic (API routes). Do not confuse with client-side `firebase` SDK.
 * **Vault Hygiene:** NEVER commit `.json` files or `.env.local` to Git. (Enforced by `.gitignore`).
 
-### IV. ENVIRONMENT & DEPENDENCIES
-* **Brain Container:** You run in `ralph-brain` (Python). **DO NOT use npx, npm, or node here.**
-* **Baseline Versions:** Force `"next": "14.2.4"` and `"firebase": "10.12.2"` in `package.json`.
-* **Static Images:** Use `images: { unoptimized: true }` in `next.config.mjs` for static export compatibility.
+### IV. ENVIRONMENT & DEPENDENCIES (HARD-BLOCK)
+* **Brain Container (Python):** You are running in a Python 3.11 environment. 
+* **FORBIDDEN COMMANDS:** `npm`, `npx`, `node`, `yarn`. Using these will CRASH the build.
+* **Delegation:** Your ONLY job is to write `.ts`, `.tsx`, and `.json` files. Step 3 (the Node container) will handle the installation and building.
 
 ### V. SCAR TISSUE (Historical Post-Mortems)
 * **Failure [Build 2337e48d]:** Wiped project and attempted "Pages Router" conversion. 
@@ -39,3 +39,4 @@
 ### VI. OPTIMIZATION & RESILIENCE
 * **One-Shot Goal:** Fulfill Branding + Logic + Admin Config in Iteration 1.
 * **API Resilience:** If the AI Model returns 503/429, EXIT immediately with code 1. Do not deploy stale/empty code.
+
