@@ -1,3 +1,20 @@
-.env
+# Dependencies
 node_modules/
+
+# Next.js build output
 .next/
+out/
+
+# Environment variables (Crucial)
+.env
+.env.local
+.env.*.local
+*.json.local
+
+# Service Account Keys
+*.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
