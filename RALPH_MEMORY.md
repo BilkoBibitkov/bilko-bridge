@@ -1,8 +1,8 @@
-# RALPH_MEMORY.md (v1.9.3 - The Circuit Breaker)
+# RALPH_MEMORY.md (v1.9.4 - The Cooled Sovereign)
 
 ### I. CRITICAL EXECUTION RULES
 * **Fail Fast:** Always start bash scripts with `set -e`.
-* **Circuit Breaker (MANDATORY):** If a model response returns "FAILURE: AI generation error" or "503 UNAVAILABLE", you MUST `exit 1` immediately. NEVER proceed to build or deploy if the plan is an error message. It is better to fail the build than to deploy stale or empty code.
+* **Circuit Breaker (MANDATORY):** If a model response returns "503 UNAVAILABLE", you MUST `exit 1` immediately. NEVER proceed to build or deploy if the plan is an error message. It is better to fail the build than to deploy stale or empty code.
 * **Heredoc Safety:** ALWAYS use quoted delimiters (e.g., `cat << 'EOF'`) for source code (JS/TS/CSS). This prevents the shell from interpreting `${...}` or backticks as shell variables.
 * **Context Probing:** Wrap git commands in `if [ -d .git ]; then ... fi`. Cloud Build manual submissions strip `.git`.
 * **Git Safety:** ALWAYS inject `git config --global --add safe.directory /workspace` for manual builds to resolve ownership issues.
@@ -33,13 +33,14 @@
 * **Failure [Build a3e86414]:** Git Race Condition. Local and Cloud histories diverged.
   * *Resolution:* Use `pulse` command locally to stash, rebase, and pop before launching.
 * **Failure [503 Overload]:** Model congestion caused Ralph to deploy "Failure" messages as code. 
-  * *Resolution:* Section VII (Circuit Breaker) now enforces a hard exit on 503 errors.
+  * *Resolution:* Section VI (Cooling Protocol) now enforces a 60-second wait between attempts.
 * **Failure [Webpack Undici]:** Dependency version conflict.
   * *Resolution:* Lock Next.js to exactly `14.2.4` and Firebase to `10.12.2`.
 
-### VI. OPTIMIZATION & RESILIENCE
+### VI. OPTIMIZATION & RESILIENCE (COOLING PROTOCOL)
 * **One-Shot Goal:** Fulfill Branding + Design + Content + Admin Config in Iteration 1.
-* **API Resilience:** The pipeline includes a 60s retry loop. If you fail, the system will wait and try again. Do not attempt to "fake" a successful iteration if the API is down.
+* **Patience:** If the API returns a 503 error, the system will now sleep for 60 seconds. Do not panic.
+* **Circuit Breaker:** If 503 persists after 3 "Cooled" attempts, the build must terminate to prevent stale deployments.
 
 ### VII. SOVEREIGN IDENTITY
 * **Language:** Respect Bulgarian heritage. 

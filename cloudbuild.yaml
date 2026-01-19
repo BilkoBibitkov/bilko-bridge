@@ -19,7 +19,7 @@ steps:
       #!/usr/bin/env bash
       python bridge.py --probe || echo "Warning: Primary model capacity low."
 
-  # --- Step 2: The Sovereign Brain (Ralph) ---
+  # --- Step 2: The Sovereign Brain (Ralph) with Cooling System ---
   - name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
     id: 'Ralph Evolution'
     secretEnv: [
@@ -34,18 +34,36 @@ steps:
     script: |
       #!/usr/bin/env bash
       set -e
-      # Standard Firebase Client Env
       export NEXT_PUBLIC_FIREBASE_API_KEY=$FIREBASE_API_KEY
       export NEXT_PUBLIC_FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
       export NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN
       
-      # New Sovereign Power Injections
-      export AMP_API_KEY=$AMP_API_KEY
       echo "$FIREBASE_ADMIN_KEY" > service-account.json
       echo "$RALPH_SERVICE_KEY" > ralph-key.json
       
-      chmod +x ralph.sh
-      ./ralph.sh 5
+      # --- COOLING RETRY LOOP ---
+      MAX_RETRIES=3
+      for i in $(seq 1 $MAX_RETRIES); do
+        echo "════════ Attempt $i of $MAX_RETRIES ════════"
+        
+        # Run 1 iteration at a time to check for errors
+        ./ralph.sh 1 > ralph_output.log 2>&1 || true
+        cat ralph_output.log
+
+        if grep -q "503 UNAVAILABLE" ralph_output.log; then
+          if [ $i -lt $MAX_RETRIES ]; then
+            echo "⚠️ Model overloaded. Cooling down for 60 seconds..."
+            sleep 60
+          else
+            echo "❌ Max retries reached. Failing build to protect state."
+            exit 1
+          fi
+        else
+          # If it succeeded, run the remaining 4 iterations
+          ./ralph.sh 4
+          break
+        fi
+      done
 
   # --- Step 3: Build & Deploy ---
   - name: 'node:20'
@@ -90,4 +108,4 @@ availableSecrets:
 options:
   substitution_option: ALLOW_LOOSE
   logging: CLOUD_LOGGING_ONLY
-timeout: '1500s'
+timeout: '1800s'
