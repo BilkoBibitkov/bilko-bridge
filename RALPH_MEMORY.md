@@ -1,8 +1,8 @@
-# RALPH_MEMORY.md (v1.9.4 - The Cooled Sovereign)
+# RALPH_MEMORY.md (v1.9.8 - The Sovereign Guard)
 
 ### I. CRITICAL EXECUTION RULES
 * **Fail Fast:** Always start bash scripts with `set -e`.
-* **Circuit Breaker (MANDATORY):** If a model response returns "503 UNAVAILABLE", you MUST `exit 1` immediately. NEVER proceed to build or deploy if the plan is an error message. It is better to fail the build than to deploy stale or empty code.
+* **Circuit Breaker (MANDATORY):** If a model response returns "503 UNAVAILABLE" or any generation error, you MUST `exit 1` immediately. NEVER proceed to build or deploy if the plan is an error message. It is better to fail the build than to deploy stale or empty code.
 * **Heredoc Safety:** ALWAYS use quoted delimiters (e.g., `cat << 'EOF'`) for source code (JS/TS/CSS). This prevents the shell from interpreting `${...}` or backticks as shell variables.
 * **Context Probing:** Wrap git commands in `if [ -d .git ]; then ... fi`. Cloud Build manual submissions strip `.git`.
 * **Git Safety:** ALWAYS inject `git config --global --add safe.directory /workspace` for manual builds to resolve ownership issues.
@@ -28,16 +28,14 @@
 * **Delegation:** Your ONLY job is to generate `.ts`, `.tsx`, `.css`, and `.json` files. Step 3 in the pipeline (the Node container) will handle the `npm install` and `npm run build`.
 
 ### V. SCAR TISSUE (Historical Post-Mortems)
-* **Failure [Build 2337e48d]:** Ralph wiped the project, hallucinated an "Image Viewer," and tried to use the old Pages Router. 
-  * *Resolution:* App Router is the only permitted architecture. No root `/pages` directory. No root `/functions` directory unless specifically in PRD.
+* **Failure [Build 2337e48d]:** Ralph wiped the project and tried to use the old Pages Router. 
+  * *Resolution:* App Router is the only permitted architecture. No root `/pages` directory.
 * **Failure [Build a3e86414]:** Git Race Condition. Local and Cloud histories diverged.
   * *Resolution:* Use `pulse` command locally to stash, rebase, and pop before launching.
-* **Failure [503 Overload]:** Model congestion caused Ralph to deploy "Failure" messages as code. 
-  * *Resolution:* Section VI (Cooling Protocol) now enforces a 60-second wait between attempts.
+* **Failure [Build 951dde91]:** Imported missing `./page.module.css`, crashing Webpack.
+  * *RESOLUTION (HARD RULE):* NEVER use CSS Modules (`.module.css`). ALL styling must be done via Tailwind utility classes directly in the JSX `className` prop. Never import a file you did not explicitly create in the same script.
 * **Failure [Webpack Undici]:** Dependency version conflict.
   * *Resolution:* Lock Next.js to exactly `14.2.4` and Firebase to `10.12.2`.
-* **Failure [Build 8b198206]:** Import of missing `./page.module.css` caused Webpack crash.
-  * *Resolution:* PREFER Tailwind utility classes. NEVER import local CSS modules unless you explicitly create the file in the same iteration.
 
 ### VI. OPTIMIZATION & RESILIENCE (COOLING PROTOCOL)
 * **One-Shot Goal:** Fulfill Branding + Design + Content + Admin Config in Iteration 1.
@@ -47,4 +45,3 @@
 ### VII. SOVEREIGN IDENTITY
 * **Language:** Respect Bulgarian heritage. 
 * **Facts:** When requested, include verified historical facts regarding the Cyrillic alphabet, the 681 AD establishment, and Rose Oil production.
-
