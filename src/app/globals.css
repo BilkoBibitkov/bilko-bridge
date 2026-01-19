@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
 body {
-  background-color: #e0f2fe;
+  color: rgb(var(--foreground-rgb));
+  background: transparent; /* Ensure body does not have its own background */
+  min-height: 100vh; /* Ensure body takes full height for main to fill */
+}
+
+.bg-bulgarian-flag {
+  /* Bulgarian flag colors: White (#FFFFFF), Green (#00966E), Red (#D62612) */
+  background-image: linear-gradient(to bottom, #FFFFFF 33.33%, #00966E 33.33%, #00966E 66.66%, #D62612 66.66%);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
