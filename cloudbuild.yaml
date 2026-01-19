@@ -1,5 +1,5 @@
 steps:
-  # --- Step 0: Git Configuration ---
+  # --- Step 0: Git Prep ---
   - name: 'gcr.io/cloud-builders/git'
     id: 'Git Configuration'
     secretEnv: ['GH_TOKEN']
@@ -17,60 +17,55 @@ steps:
     secretEnv: ['GOOGLE_API_KEY']
     script: |
       #!/usr/bin/env bash
-      # Probe for health. If 503 is detected, this script will log it.
       python bridge.py --probe || echo "Warning: Primary model capacity low."
 
-  # --- Step 2: The Resilient Brain (Ralph) ---
+  # --- Step 2: The Sovereign Brain (Ralph) ---
   - name: 'gcr.io/bilkobibitkov/ralph-brain:latest'
     id: 'Ralph Evolution'
-    secretEnv: ['GOOGLE_API_KEY', 'FIREBASE_API_KEY', 'FIREBASE_PROJECT_ID', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_ADMIN_KEY']
+    secretEnv: [
+      'GOOGLE_API_KEY', 
+      'FIREBASE_API_KEY', 
+      'FIREBASE_PROJECT_ID', 
+      'FIREBASE_AUTH_DOMAIN', 
+      'FIREBASE_ADMIN_KEY',
+      'AMP_API_KEY',
+      'RALPH_SERVICE_KEY'
+    ]
     script: |
       #!/usr/bin/env bash
       set -e
+      # Standard Firebase Client Env
       export NEXT_PUBLIC_FIREBASE_API_KEY=$FIREBASE_API_KEY
       export NEXT_PUBLIC_FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
       export NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN
-      echo "$FIREBASE_ADMIN_KEY" > service-account.json
-
-      # RESILIENCE LOOP: Try up to 3 times with increasing wait times
-      MAX_RETRIES=3
-      RETRY_COUNT=0
       
-      until python bridge.py || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
-        RETRY_COUNT=$((RETRY_COUNT + 1))
-        WAIT_TIME=$((RETRY_COUNT * 60)) # Wait 60s, then 120s
-        echo "503/Overload detected. Retrying in $WAIT_TIME seconds (Attempt $RETRY_COUNT/$MAX_RETRIES)..."
-        sleep $WAIT_TIME
-      done
+      # New Sovereign Power Injections
+      export AMP_API_KEY=$AMP_API_KEY
+      echo "$FIREBASE_ADMIN_KEY" > service-account.json
+      echo "$RALPH_SERVICE_KEY" > ralph-key.json
+      
+      chmod +x ralph.sh
+      ./ralph.sh 5
 
-      # FALLBACK: If flash is still dead, try the Pro model
-      if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-        echo "Primary model failed. Attempting fallback to gemini-1.5-pro..."
-        export PREFERRED_MODEL="gemini-1.5-pro"
-        python bridge.py
-      fi
-
-  # --- Step 3: Application Build (Node) ---
+  # --- Step 3: Build & Deploy ---
   - name: 'node:20'
     id: 'App Build'
     script: |
       #!/usr/bin/env bash
       npm install
       npm run build
-
-  # --- Step 4: Firebase Deployment ---
   - name: 'gcr.io/bilkobibitkov/firebase'
     id: 'Firebase Deploy'
     args: ['deploy', '--only', 'hosting', '--project', 'bilkobibitkov']
 
-  # --- Step 5: State Synchronization ---
+  # --- Step 4: Sync ---
   - name: 'gcr.io/cloud-builders/git'
     id: 'Push Evolution'
     secretEnv: ['GH_TOKEN']
     script: |
       #!/usr/bin/env bash
       git add .
-      git commit -m "chore: Ralph evolution update [skip ci]" || echo "No changes"
+      git commit -m "chore: Sovereign Ralph update [skip ci]" || echo "No changes"
       git push origin main
 
 availableSecrets:
@@ -87,6 +82,10 @@ availableSecrets:
     env: 'FIREBASE_AUTH_DOMAIN'
   - versionName: projects/$PROJECT_ID/secrets/FIREBASE_ADMIN_KEY/versions/latest
     env: 'FIREBASE_ADMIN_KEY'
+  - versionName: projects/$PROJECT_ID/secrets/AMP_API_KEY/versions/latest
+    env: 'AMP_API_KEY'
+  - versionName: projects/$PROJECT_ID/secrets/ralph-key/versions/latest
+    env: 'RALPH_SERVICE_KEY'
 
 options:
   substitution_option: ALLOW_LOOSE
